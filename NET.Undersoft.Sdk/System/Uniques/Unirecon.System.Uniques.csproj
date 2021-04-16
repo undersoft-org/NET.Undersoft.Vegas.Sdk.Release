@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Hashkey\Algorithm\Base\**" />
+    <Compile Remove="Hashkey\Algorithm\Interfaces\**" />
+    <Compile Remove="Hashkey\Algorithm\Utilities\**" />
+    <EmbeddedResource Remove="Hashkey\Algorithm\Base\**" />
+    <EmbeddedResource Remove="Hashkey\Algorithm\Interfaces\**" />
+    <EmbeddedResource Remove="Hashkey\Algorithm\Utilities\**" />
+    <None Remove="Hashkey\Algorithm\Base\**" />
+    <None Remove="Hashkey\Algorithm\Interfaces\**" />
+    <None Remove="Hashkey\Algorithm\Utilities\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Hashkey\Algorithm\UnsafeBuffer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Unirecon.System.Extract\Unirecon.System.Extract.csproj" />
+    <ProjectReference Include="..\Unirecon.System\Unirecon.System.csproj" />
+  </ItemGroup>
+
+</Project>
