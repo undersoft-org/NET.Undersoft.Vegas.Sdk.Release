@@ -12,8 +12,7 @@
           "NET.Undersoft.Sdk": "1.0.0",
           "System.Text.Encoding.CodePages": "4.7.0",
           "xunit": "2.4.0",
-          "xunit.runner.visualstudio": "2.4.0",
-          "Undersoft.System.Native.Bitscan": "0.0.0.0"
+          "xunit.runner.visualstudio": "2.4.0"
         },
         "runtime": {
           "NET.Undersoft.Sdk.Tests.dll": {}
@@ -1224,14 +1223,6 @@
         "runtime": {
           "NET.Undersoft.Sdk.dll": {}
         }
-      },
-      "Undersoft.System.Native.Bitscan/0.0.0.0": {
-        "runtime": {
-          "Undersoft.System.Native.Bitscan.dll": {
-            "assemblyVersion": "0.0.0.0",
-            "fileVersion": "0.0.0.0"
-          }
-        }
       }
     }
   },
@@ -1866,11 +1857,6 @@
     },
     "NET.Undersoft.Sdk/1.0.0": {
       "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "Undersoft.System.Native.Bitscan/0.0.0.0": {
-      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }
