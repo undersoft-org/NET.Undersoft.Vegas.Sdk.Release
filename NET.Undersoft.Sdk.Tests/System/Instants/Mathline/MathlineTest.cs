@@ -1,5 +1,6 @@
 using System.Uniques;
 using System.Linq;
+using System.Diagnostics;
 using System.Reflection;
 using Xunit;
 
@@ -73,9 +74,16 @@ namespace System.Instants.Mathline
 
             ml2.Formula = ml * ml2["TaxRate"];
 
-            rck.Reckon(); // first with formula compilation
-
-            rck.Reckon(); // second when formula compiled
+           // computing for the first time is slightly slower because of formula compilation, 
+           // the number of items and the changes made in them DO NOT AFFECT THE COMPILATED FORMULA !!!
+            var sw = Stopwatch.StartNew();           
+            rck.Reckon(); 
+            sw.Stop();
+            Debug.WriteLine("Compile & Compute time: %", sw.ElapsedTicks.ToString());
+            sw.Restart();
+            rck.Reckon(); // second time when assigned formula is compiled.  
+            sw.Stop();
+            Debug.WriteLine("Compute time : %", sw.ElapsedTicks.ToString());
         }
 
         [Fact]
@@ -92,9 +100,16 @@ namespace System.Instants.Mathline
 
             ml2.Formula = ml * ml2["TaxRate"];
 
-            rck.Reckon(); // first with formula compilation
-
-            rck.Reckon(); // second when formula compiled
+           // computing for the first time is slightly slower because of formula compilation, 
+           // the number of items and the changes made in them DO NOT AFFECT THE COMPILATED FORMULA !!!
+            var sw = Stopwatch.StartNew();           
+            rck.Reckon(); 
+            sw.Stop();
+            Debug.WriteLine("Compile & Compute time: %", sw.ElapsedTicks.ToString());
+            sw.Restart();
+            rck.Reckon(); // second time when assigned formula is compiled.  
+            sw.Stop();
+            Debug.WriteLine("Compute time : %", sw.ElapsedTicks.ToString());
         }
     }
 }
