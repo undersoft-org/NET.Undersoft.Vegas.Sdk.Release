@@ -18,6 +18,7 @@ namespace System.Instant
     using System.Sets;
     using System.Uniques;
 
+
     public abstract class FigureAlbum : BaseAlbum<IFigure>, IFigures
     {
         public IInstant Instant { get; set; }
@@ -45,7 +46,7 @@ namespace System.Instant
             return new FigureCard(this);
         }
 
-        public override ICard<IFigure> NewCard(ulong  key, IFigure value)
+        public override ICard<IFigure> NewCard(ulong key, IFigure value)
         {
             return new FigureCard(key, value, this);
         }

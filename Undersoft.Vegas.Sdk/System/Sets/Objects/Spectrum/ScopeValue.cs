@@ -40,6 +40,16 @@ namespace System.Sets.Spectrum
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScopeValue"/> class.
+        /// </summary>
+        /// <param name="Size">The Size<see cref="int"/>.</param>
+        /// <param name="Scopes">The Scopes<see cref="IDeck{BaseSpectrum}"/>.</param>
+        /// <param name="SigmaScopes">The SigmaScopes<see cref="IDeck{BaseSpectrum}"/>.</param>
+        /// <param name="Levels">The Levels<see cref="IList{vEBTreeLevel}"/>.</param>
+        /// <param name="Level">The Level<see cref="byte"/>.</param>
+        /// <param name="NodeIndex">The NodeIndex<see cref="byte"/>.</param>
+        /// <param name="DeckIndex">The DeckIndex<see cref="int"/>.</param>
         public ScopeValue(int Size, IDeck<BaseSpectrum> Scopes, IDeck<BaseSpectrum> SigmaScopes, IList<vEBTreeLevel> Levels, byte Level, byte NodeIndex, int DeckIndex)
         {
             this.min = NULL_KEY;

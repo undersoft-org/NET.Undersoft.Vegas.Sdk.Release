@@ -1,19 +1,68 @@
-﻿using System.Linq;
-using System.Instant.Linking;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Treatment.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Treatments
 {
+    using System.Instant.Linking;
+    using System.Linq;
+
+    /// <summary>
+    /// Defines the <see cref="Treatment" />.
+    /// </summary>
     public class Treatment
     {
-        private IFigures figures;
+        #region Fields
 
+        private MemberRubrics aggregateRubrics;
+        private IFigures figures;
+        private MemberRubrics replicateRubrics;
+        private MemberRubrics summaryRubrics;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Treatment"/> class.
+        /// </summary>
+        /// <param name="Figures">The Figures<see cref="IFigures"/>.</param>
         public Treatment(IFigures Figures)
         {
             figures = Figures;
         }
 
-        private MemberRubrics  replicateRubrics;
-        public  MemberRubrics  ReplicateRubrics
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the AggregateRubrics.
+        /// </summary>
+        public MemberRubrics AggregateRubrics
+        {
+            get
+            {
+                if (aggregateRubrics == null)
+                {
+                    UpdateAggregation();
+                }
+                return aggregateRubrics;
+            }
+        }
+
+        /// <summary>
+        /// Gets the ReplicateRubrics.
+        /// </summary>
+        public MemberRubrics ReplicateRubrics
         {
             get
             {
@@ -28,27 +77,30 @@ namespace System.Instant.Treatments
             }
         }
 
-        public MemberRubrics   UpdateReplication()
-        {
-            replicateRubrics = new MemberRubrics();
-            replicateRubrics.Put(aggregateRubrics.AsValues().Where(p => p.AggregateOperand == AggregateOperand.Bind));
-            return replicateRubrics;
-        }
-
-        private MemberRubrics  aggregateRubrics;
-        public  MemberRubrics  AggregateRubrics
+        /// <summary>
+        /// Gets the SummaryRubrics.
+        /// </summary>
+        public IRubrics SummaryRubrics
         {
             get
             {
-                if (aggregateRubrics == null)
+                if (summaryRubrics == null)
                 {
-                    UpdateAggregation();
+                    UpdateSummation();
                 }
-                return aggregateRubrics;
+                return summaryRubrics;
             }
         }
 
-        public MemberRubrics   UpdateAggregation()
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The UpdateAggregation.
+        /// </summary>
+        /// <returns>The <see cref="MemberRubrics"/>.</returns>
+        public MemberRubrics UpdateAggregation()
         {
             AggregateOperand parsed = new AggregateOperand();
             Links targetLinks = figures.Linker.TargetLinks;
@@ -60,14 +112,14 @@ namespace System.Instant.Treatments
                                                                   c.AggregateOperand != AggregateOperand.None).ToArray();
             foreach (MemberRubric c in _aggregateRubrics)
             {
-                c.AggregateRubric = (c.AggregateRubric != null) ? 
-                                      c.AggregateRubric : 
-                                     (c.AggregateOperand != AggregateOperand.None) ? 
+                c.AggregateRubric = (c.AggregateRubric != null) ?
+                                      c.AggregateRubric :
+                                     (c.AggregateOperand != AggregateOperand.None) ?
                                             new MemberRubric(c) { RubricName = c.RubricName } :
                                             new MemberRubric(c) { RubricName = c.RubricName.Split('#')[1] };
 
                 c.AggregateOperand = c.AggregateOperand != AggregateOperand.None ?
-                                     c.AggregateOperand : 
+                                     c.AggregateOperand :
                                      (Enum.TryParse(c.RubricName.Split('#')[0], true, out parsed)) ?
                                      parsed : AggregateOperand.None;
 
@@ -95,7 +147,7 @@ namespace System.Instant.Treatments
 
             aggregateRubrics.Put(_aggregateRubrics);
             aggregateRubrics.AsValues().Where(j => j.AggregateLinkId > -1)
-                                            .Select(p => p.AggregateLinks = 
+                                            .Select(p => p.AggregateLinks =
                                                new Links(targetLinks.AsCards().Where((x, y) =>
                                                 p.AggregateLinkId == x.Index).Select(v => v.Value).ToArray()));
 
@@ -104,25 +156,27 @@ namespace System.Instant.Treatments
             return aggregateRubrics;
         }
 
-        private MemberRubrics  summaryRubrics;
-        public  IRubrics       SummaryRubrics
+        /// <summary>
+        /// The UpdateReplication.
+        /// </summary>
+        /// <returns>The <see cref="MemberRubrics"/>.</returns>
+        public MemberRubrics UpdateReplication()
         {
-            get
-            {
-                if (summaryRubrics == null)
-                {
-                    UpdateSummation();
-                }
-                return summaryRubrics;
-            }
+            replicateRubrics = new MemberRubrics();
+            replicateRubrics.Put(aggregateRubrics.AsValues().Where(p => p.AggregateOperand == AggregateOperand.Bind));
+            return replicateRubrics;
         }
 
-        public  MemberRubrics  UpdateSummation()
+        /// <summary>
+        /// The UpdateSummation.
+        /// </summary>
+        /// <returns>The <see cref="MemberRubrics"/>.</returns>
+        public MemberRubrics UpdateSummation()
         {
             AggregateOperand parsed = new AggregateOperand();
             summaryRubrics = new MemberRubrics();
             Figure summaryFigure = new Figure(figures.Rubrics.AsValues().Where(c =>
-                                               (c.RubricName.Split('=').Length > 1 || 
+                                               (c.RubricName.Split('=').Length > 1 ||
                                                (c.SummaryOperand != AggregateOperand.None))).Select(c =>
                                                (new MemberRubric(c)
                                                {
@@ -135,5 +189,7 @@ namespace System.Instant.Treatments
             summaryRubrics = (MemberRubrics)summaryFigure.Rubrics;
             return summaryRubrics;
         }
+
+        #endregion
     }
 }

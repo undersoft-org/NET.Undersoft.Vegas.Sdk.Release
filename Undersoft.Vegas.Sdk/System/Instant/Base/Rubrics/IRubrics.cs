@@ -14,34 +14,80 @@ namespace System.Instant
 {
     using System.Sets;
 
+    /// <summary>
+    /// Defines the <see cref="IRubrics" />.
+    /// </summary>
     public interface IRubrics : IUnique, IDeck<MemberRubric>
     {
         #region Properties
 
-        IFigures Figures { get; set; }
+        /// <summary>
+        /// Gets the BinarySize.
+        /// </summary>
+        int BinarySize { get; }
 
-        IRubrics KeyRubrics { get; set; }
-
-        FieldMappings Mappings { get; set; }
-
-        int[] Ordinals { get; }
-
+        /// <summary>
+        /// Gets the BinarySizes.
+        /// </summary>
         int[] BinarySizes { get; }
 
-        int BinarySize { get; }
+        /// <summary>
+        /// Gets or sets the Figures.
+        /// </summary>
+        IFigures Figures { get; set; }
+
+        /// <summary>
+        /// Gets or sets the KeyRubrics.
+        /// </summary>
+        IRubrics KeyRubrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Mappings.
+        /// </summary>
+        FieldMappings Mappings { get; set; }
+
+        /// <summary>
+        /// Gets the Ordinals.
+        /// </summary>
+        int[] Ordinals { get; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// The GetBytes.
+        /// </summary>
+        /// <param name="figure">The figure<see cref="IFigure"/>.</param>
+        /// <returns>The <see cref="byte[]"/>.</returns>
         byte[] GetBytes(IFigure figure);
 
-        ulong GetUniqueKey(IFigure figure, uint seed = 0);
-
+        /// <summary>
+        /// The GetUniqueBytes.
+        /// </summary>
+        /// <param name="figure">The figure<see cref="IFigure"/>.</param>
+        /// <param name="seed">The seed<see cref="uint"/>.</param>
+        /// <returns>The <see cref="byte[]"/>.</returns>
         byte[] GetUniqueBytes(IFigure figure, uint seed = 0);
 
+        /// <summary>
+        /// The GetUniqueKey.
+        /// </summary>
+        /// <param name="figure">The figure<see cref="IFigure"/>.</param>
+        /// <param name="seed">The seed<see cref="uint"/>.</param>
+        /// <returns>The <see cref="ulong"/>.</returns>
+        ulong GetUniqueKey(IFigure figure, uint seed = 0);
+
+        /// <summary>
+        /// The SetUniqueKey.
+        /// </summary>
+        /// <param name="figure">The figure<see cref="IFigure"/>.</param>
+        /// <param name="seed">The seed<see cref="uint"/>.</param>
         void SetUniqueKey(IFigure figure, uint seed = 0);
 
+        /// <summary>
+        /// The Update.
+        /// </summary>
         void Update();
 
         #endregion

@@ -14,6 +14,7 @@ namespace System.Labors
     using System.Instant;
     using System.Sets;
 
+
     public class Scope
     {
         public Scope(string name = null, LaborNotes notes = null)

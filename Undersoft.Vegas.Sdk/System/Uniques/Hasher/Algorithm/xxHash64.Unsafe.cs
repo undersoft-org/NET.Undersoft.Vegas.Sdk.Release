@@ -1,15 +1,43 @@
-﻿namespace System.Uniques
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.xxHash64.Unsafe.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
+
+namespace System.Uniques
 {
     using System.Runtime.CompilerServices;
 
+    /// <summary>
+    /// Defines the <see cref="xxHash64" />.
+    /// </summary>
     public static partial class xxHash64
     {
+        #region Constants
+
         private const ulong p1 = 10611063106910871091UL;
         private const ulong p2 = 15396334245663786197UL;
         private const ulong p3 = 1799999999999999999UL;
         private const ulong p4 = 3203000719597029781UL;
         private const ulong p5 = 9999999992999999999UL;
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The UnsafeComputeHash.
+        /// </summary>
+        /// <param name="ptr">The ptr<see cref="byte*"/>.</param>
+        /// <param name="length">The length<see cref="int"/>.</param>
+        /// <param name="seed">The seed<see cref="ulong"/>.</param>
+        /// <returns>The <see cref="ulong"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ulong UnsafeComputeHash(byte* ptr, int length, ulong seed)
         {
@@ -29,52 +57,52 @@
                 do
                 {
                     v1 += *((ulong*)ptr) * p2;
-                    v1 = (v1 << 31) | (v1 >> (64 - 31)); 
+                    v1 = (v1 << 31) | (v1 >> (64 - 31));
                     v1 *= p1;
                     ptr += 8;
 
                     v2 += *((ulong*)ptr) * p2;
-                    v2 = (v2 << 31) | (v2 >> (64 - 31)); 
+                    v2 = (v2 << 31) | (v2 >> (64 - 31));
                     v2 *= p1;
                     ptr += 8;
 
                     v3 += *((ulong*)ptr) * p2;
-                    v3 = (v3 << 31) | (v3 >> (64 - 31)); 
+                    v3 = (v3 << 31) | (v3 >> (64 - 31));
                     v3 *= p1;
                     ptr += 8;
 
                     v4 += *((ulong*)ptr) * p2;
-                    v4 = (v4 << 31) | (v4 >> (64 - 31)); 
+                    v4 = (v4 << 31) | (v4 >> (64 - 31));
                     v4 *= p1;
                     ptr += 8;
 
                 } while (ptr <= limit);
 
-                h64 = ((v1 << 1) | (v1 >> (64 - 1))) +   
-                      ((v2 << 7) | (v2 >> (64 - 7))) +   
-                      ((v3 << 12) | (v3 >> (64 - 12))) + 
-                      ((v4 << 18) | (v4 >> (64 - 18))); 
+                h64 = ((v1 << 1) | (v1 >> (64 - 1))) +
+                      ((v2 << 7) | (v2 >> (64 - 7))) +
+                      ((v3 << 12) | (v3 >> (64 - 12))) +
+                      ((v4 << 18) | (v4 >> (64 - 18)));
 
                 v1 *= p2;
-                v1 = (v1 << 31) | (v1 >> (64 - 31)); 
+                v1 = (v1 << 31) | (v1 >> (64 - 31));
                 v1 *= p1;
                 h64 ^= v1;
                 h64 = h64 * p1 + p4;
 
                 v2 *= p2;
-                v2 = (v2 << 31) | (v2 >> (64 - 31)); 
+                v2 = (v2 << 31) | (v2 >> (64 - 31));
                 v2 *= p1;
                 h64 ^= v2;
                 h64 = h64 * p1 + p4;
 
                 v3 *= p2;
-                v3 = (v3 << 31) | (v3 >> (64 - 31)); 
+                v3 = (v3 << 31) | (v3 >> (64 - 31));
                 v3 *= p1;
                 h64 ^= v3;
                 h64 = h64 * p1 + p4;
 
                 v4 *= p2;
-                v4 = (v4 << 31) | (v4 >> (64 - 31)); 
+                v4 = (v4 << 31) | (v4 >> (64 - 31));
                 v4 *= p1;
                 h64 ^= v4;
                 h64 = h64 * p1 + p4;
@@ -89,10 +117,10 @@
             while (ptr <= end - 8)
             {
                 ulong t1 = *((ulong*)ptr) * p2;
-                t1 = (t1 << 31) | (t1 >> (64 - 31)); 
+                t1 = (t1 << 31) | (t1 >> (64 - 31));
                 t1 *= p1;
                 h64 ^= t1;
-                h64 = ((h64 << 27) | (h64 >> (64 - 27))) * p1 + p4; 
+                h64 = ((h64 << 27) | (h64 >> (64 - 27))) * p1 + p4;
                 ptr += 8;
             }
 
@@ -106,7 +134,7 @@
             while (ptr < end)
             {
                 h64 ^= *((byte*)ptr) * p5;
-                h64 = ((h64 << 11) | (h64 >> (64 - 11))) * p1; 
+                h64 = ((h64 << 11) | (h64 >> (64 - 11))) * p1;
                 ptr += 1;
             }
 
@@ -119,6 +147,15 @@
             return h64;
         }
 
+        /// <summary>
+        /// The UnsafeAlign.
+        /// </summary>
+        /// <param name="data">The data<see cref="byte[]"/>.</param>
+        /// <param name="l">The l<see cref="int"/>.</param>
+        /// <param name="v1">The v1<see cref="ulong"/>.</param>
+        /// <param name="v2">The v2<see cref="ulong"/>.</param>
+        /// <param name="v3">The v3<see cref="ulong"/>.</param>
+        /// <param name="v4">The v4<see cref="ulong"/>.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void UnsafeAlign(byte[] data, int l, ref ulong v1, ref ulong v2, ref ulong v3, ref ulong v4)
         {
@@ -130,17 +167,17 @@
                 do
                 {
                     v1 += *((ulong*)ptr) * p2;
-                    v1 = (v1 << 31) | (v1 >> (64 - 31)); 
+                    v1 = (v1 << 31) | (v1 >> (64 - 31));
                     v1 *= p1;
                     ptr += 8;
 
                     v2 += *((ulong*)ptr) * p2;
-                    v2 = (v2 << 31) | (v2 >> (64 - 31)); 
+                    v2 = (v2 << 31) | (v2 >> (64 - 31));
                     v2 *= p1;
                     ptr += 8;
 
                     v3 += *((ulong*)ptr) * p2;
-                    v3 = (v3 << 31) | (v3 >> (64 - 31)); 
+                    v3 = (v3 << 31) | (v3 >> (64 - 31));
                     v3 *= p1;
                     ptr += 8;
 
@@ -153,6 +190,18 @@
             }
         }
 
+        /// <summary>
+        /// The UnsafeFinal.
+        /// </summary>
+        /// <param name="data">The data<see cref="byte[]"/>.</param>
+        /// <param name="l">The l<see cref="int"/>.</param>
+        /// <param name="v1">The v1<see cref="ulong"/>.</param>
+        /// <param name="v2">The v2<see cref="ulong"/>.</param>
+        /// <param name="v3">The v3<see cref="ulong"/>.</param>
+        /// <param name="v4">The v4<see cref="ulong"/>.</param>
+        /// <param name="length">The length<see cref="long"/>.</param>
+        /// <param name="seed">The seed<see cref="ulong"/>.</param>
+        /// <returns>The <see cref="ulong"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe ulong UnsafeFinal(byte[] data, int l, ref ulong v1, ref ulong v2, ref ulong v3, ref ulong v4, long length, ulong seed)
         {
@@ -164,20 +213,20 @@
 
                 if (length >= 32)
                 {
-                    h64 = ((v1 << 1) | (v1 >> (64 - 1))) +  
-                          ((v2 << 7) | (v2 >> (64 - 7))) +   
-                          ((v3 << 12) | (v3 >> (64 - 12))) + 
-                          ((v4 << 18) | (v4 >> (64 - 18)));  
+                    h64 = ((v1 << 1) | (v1 >> (64 - 1))) +
+                          ((v2 << 7) | (v2 >> (64 - 7))) +
+                          ((v3 << 12) | (v3 >> (64 - 12))) +
+                          ((v4 << 18) | (v4 >> (64 - 18)));
 
 
                     v1 *= p2;
-                    v1 = (v1 << 31) | (v1 >> (64 - 31)); 
+                    v1 = (v1 << 31) | (v1 >> (64 - 31));
                     v1 *= p1;
                     h64 ^= v1;
                     h64 = h64 * p1 + p4;
 
                     v2 *= p2;
-                    v2 = (v2 << 31) | (v2 >> (64 - 31)); 
+                    v2 = (v2 << 31) | (v2 >> (64 - 31));
                     v2 *= p1;
                     h64 ^= v2;
                     h64 = h64 * p1 + p4;
@@ -205,24 +254,24 @@
                 while (ptr <= end - 8)
                 {
                     ulong t1 = *((ulong*)ptr) * p2;
-                    t1 = (t1 << 31) | (t1 >> (64 - 31)); 
+                    t1 = (t1 << 31) | (t1 >> (64 - 31));
                     t1 *= p1;
                     h64 ^= t1;
-                    h64 = ((h64 << 27) | (h64 >> (64 - 27))) * p1 + p4; 
+                    h64 = ((h64 << 27) | (h64 >> (64 - 27))) * p1 + p4;
                     ptr += 8;
                 }
 
                 if (ptr <= end - 4)
                 {
                     h64 ^= *((uint*)ptr) * p1;
-                    h64 = ((h64 << 23) | (h64 >> (64 - 23))) * p2 + p3; 
+                    h64 = ((h64 << 23) | (h64 >> (64 - 23))) * p2 + p3;
                     ptr += 4;
                 }
 
                 while (ptr < end)
                 {
                     h64 ^= *((byte*)ptr) * p5;
-                    h64 = ((h64 << 11) | (h64 >> (64 - 11))) * p1; 
+                    h64 = ((h64 << 11) | (h64 >> (64 - 11))) * p1;
                     ptr += 1;
                 }
 
@@ -235,5 +284,7 @@
                 return h64;
             }
         }
+
+        #endregion
     }
 }

@@ -1,18 +1,30 @@
-﻿using System.Collections.Specialized;
-using System.Extract;
-using System.Runtime.InteropServices;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.Ussn.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Uniques
 {
+    using System.Collections.Specialized;
+    using System.Extract;
+    using System.Runtime.InteropServices;
+
     [Serializable]
     [ComVisible(true)]
-    [StructLayout(LayoutKind.Sequential, Size = 24)]  
-    public unsafe struct Ussn : IFormattable, IComparable 
-        , IComparable<Ussn>, IEquatable<Ussn>, IUnique, ISerialNumber       
+    [StructLayout(LayoutKind.Sequential, Size = 24)]
+    public unsafe struct Ussn : IFormattable, IComparable
+        , IComparable<Ussn>, IEquatable<Ussn>, IUnique, ISerialNumber
     {
-        private fixed byte bytes[24];              
+        private fixed byte bytes[24];
 
-        public ulong    UniqueKey
+        public ulong UniqueKey
         {
             get
             {
@@ -27,7 +39,7 @@ namespace System.Uniques
             }
         }
 
-        public ulong   UniqueSeed
+        public ulong UniqueSeed
         {
             get
             {
@@ -41,7 +53,7 @@ namespace System.Uniques
             }
         }
 
-        public ushort  BlockZ
+        public ushort BlockZ
         {
             get
             {
@@ -54,7 +66,7 @@ namespace System.Uniques
                     *((ushort*)(b + 8)) = value;
             }
         }
-        public ushort  BlockY
+        public ushort BlockY
         {
             get
             {
@@ -67,7 +79,7 @@ namespace System.Uniques
                     *((ushort*)(b + 10)) = value;
             }
         }
-        public ushort  BlockX
+        public ushort BlockX
         {
             get
             {
@@ -81,7 +93,7 @@ namespace System.Uniques
             }
         }
 
-        public ushort  FlagsBlock
+        public ushort FlagsBlock
         {
             get
             {
@@ -95,7 +107,7 @@ namespace System.Uniques
             }
         }
 
-        public long    TimeBlock
+        public long TimeBlock
         {
             get
             {
@@ -118,7 +130,7 @@ namespace System.Uniques
             }
         }
         public Ussn(string s)
-        {          
+        {
             this.FromHexTetraChars(s.ToCharArray());    //RR
         }
         public Ussn(byte[] b)
@@ -177,12 +189,12 @@ namespace System.Uniques
             }
         }
         public Ussn(byte[] key, short z, short y, short x, short flags, long time)
-        {          
+        {
             fixed (byte* n = bytes)
             {
                 fixed (byte* s = key)
                     *((ulong*)n) = *((ulong*)s);
-                *((short*)(n + 8)) = z;            
+                *((short*)(n + 8)) = z;
                 *((short*)(n + 10)) = y;
                 *((short*)(n + 12)) = x;
                 *((short*)(n + 14)) = flags;
@@ -208,7 +220,7 @@ namespace System.Uniques
             fixed (byte* n = bytes)
             {
                 *((ulong*)n) = key.UniqueKey64();
-               // *((ulong*)(n + 16)) = DateTime.Now.ToBinary();    //TODO: f.Tick - rok 2018.01.01 w tikach
+                // *((ulong*)(n + 16)) = DateTime.Now.ToBinary();    //TODO: f.Tick - rok 2018.01.01 w tikach
             }
         }
 
@@ -216,7 +228,7 @@ namespace System.Uniques
         {
             get
             {
-                if (offset != 0)                   
+                if (offset != 0)
                 {
                     int l = 24 - offset;
                     byte[] r = new byte[l];
@@ -250,7 +262,7 @@ namespace System.Uniques
                     {
                         Extractor.CopyBlock(pbyte, rbyte, 24);
                     }
-                }               
+                }
             }
         }
         public byte[] this[int offset, int length]
@@ -260,8 +272,8 @@ namespace System.Uniques
                 if (offset < 24)
                 {
                     if ((24 - offset) > length)
-                    length = 24 - offset;
-               
+                        length = 24 - offset;
+
                     byte[] r = new byte[length];
                     fixed (byte* pbyte = bytes)
                     fixed (byte* rbyte = r)
@@ -271,7 +283,7 @@ namespace System.Uniques
                     return r;
                 }
                 return null;
-               
+
             }
             set
             {
@@ -281,7 +293,7 @@ namespace System.Uniques
                         length = 24 - offset;
                     if (value.Length < length)
                         length = value.Length;
-                   
+
                     fixed (byte* rbyte = value)
                     fixed (byte* pbyte = bytes)
                     {
@@ -289,7 +301,7 @@ namespace System.Uniques
                     }
                 }
             }
-        }      
+        }
 
         public void SetBytes(byte[] value, int offset)
         {
@@ -298,7 +310,7 @@ namespace System.Uniques
 
         public byte[] GetBytes(int offset, int length)
         {
-           return this[offset, length];
+            return this[offset, length];
         }
 
         public byte[] GetBytes()
@@ -313,7 +325,7 @@ namespace System.Uniques
         }
 
         public byte[] GetUniqueBytes()
-        {            
+        {
             byte[] kbytes = new byte[8];
             fixed (byte* b = bytes)
             fixed (byte* k = kbytes)
@@ -339,9 +351,9 @@ namespace System.Uniques
         public ulong GetUniqueSeed()
         {
             return UniqueSeed;
-        }       
+        }
 
-        public ulong    ValueFromXYZ(uint vectorZ, uint vectorY)
+        public ulong ValueFromXYZ(uint vectorZ, uint vectorY)
         {
             return (BlockZ * vectorZ * vectorY) + (BlockY * vectorY) + BlockX;
         }
@@ -361,7 +373,7 @@ namespace System.Uniques
             return null;
         }
 
-        public ushort    GetFlags()
+        public ushort GetFlags()
         {
             fixed (byte* pbyte = bytes)
                 return *((ushort*)(pbyte + 14));
@@ -377,7 +389,7 @@ namespace System.Uniques
                 *((ushort*)(pbyte + 14)) = *((ushort*)&bits);
         }
 
-        public long     GetDateLong()
+        public long GetDateLong()
         {
             fixed (byte* pbyte = bytes)
                 return *((long*)(pbyte + 16));
@@ -396,13 +408,13 @@ namespace System.Uniques
         public bool IsEmpty
         {
             get { return (UniqueKey == 0); }
-        }      
+        }
 
         public override int GetHashCode()
         {
-            fixed (byte* pbyte = &this[0,8].BitAggregate64to32()[0])
+            fixed (byte* pbyte = &this[0, 8].BitAggregate64to32()[0])
                 return *((int*)pbyte);
-        }      
+        }
 
         public int CompareTo(object value)
         {
@@ -449,8 +461,8 @@ namespace System.Uniques
         }
 
         public override String ToString()
-        {           
-            return new string(this.ToHexTetraChars());  
+        {
+            return new string(this.ToHexTetraChars());
         }
 
         public String ToString(String format)
@@ -459,7 +471,7 @@ namespace System.Uniques
         }
 
         public string ToString(string format, IFormatProvider formatProvider)
-        {         
+        {
             return new string(this.ToHexTetraChars());  //RR
         }
 
@@ -486,7 +498,7 @@ namespace System.Uniques
         {
             return new Ussn(l);
         }
-        public static implicit operator byte[](Ussn s)
+        public static implicit operator byte[] (Ussn s)
         {
             return s.GetBytes();
         }
@@ -494,7 +506,7 @@ namespace System.Uniques
         public static Ussn Empty
         {
             get { return new Ussn(); }
-        }      
+        }
 
         IUnique IUnique.Empty
         {
@@ -502,12 +514,12 @@ namespace System.Uniques
             {
                 return new Ussn();
             }
-        }       
+        }
 
         public char[] ToHexTetraChars()
         {
             char[] pchchar = new char[32];
-            ulong pchblock;  
+            ulong pchblock;
             int pchlength = 32;
             byte pchbyte;
             int idx = 0;
@@ -521,18 +533,18 @@ namespace System.Uniques
                 pchblock = pchblock & 0x0000ffffffffffffL;  //each block has 6 bytes
                 for (int i = 0; i < 8; i++)
                 {
-                    pchbyte = (byte)(pchblock & 0x3fL);                    
+                    pchbyte = (byte)(pchblock & 0x3fL);
                     pchchar[idx] = (pchbyte).ToHexTetraChar();
-                    idx++;                    
+                    idx++;
                     pchblock = pchblock >> 6;
                     if (pchbyte != 0x00) pchlength = idx;
                 }
             }
-                        
+
             char[] pchchartrim = new char[pchlength];
             Array.Copy(pchchar, 0, pchchartrim, 0, pchlength);
 
-            return pchchartrim;            
+            return pchchartrim;
         }
 
         public void FromHexTetraChars(char[] pchchar)
@@ -549,7 +561,7 @@ namespace System.Uniques
             {
                 pchblock = 0x00L;
                 blocklength = Math.Min(8, Math.Max(0, pchlength - 8 * j));        //required if trimmed zeros, length < 32
-                idx = Math.Min(pchlength, 8*(j+1)) - 1;                           //required if trimmed zeros, length <32
+                idx = Math.Min(pchlength, 8 * (j + 1)) - 1;                           //required if trimmed zeros, length <32
 
                 for (int i = 0; i < blocklength; i++)     //8 chars per block, each 6 bits
                 {
@@ -571,7 +583,7 @@ namespace System.Uniques
                     *((ulong*)&pbyte[j * 6]) = pchblock;
 
                 }
-            }                                    
+            }
         }
 
         public bool EqualsContent(Ussn g)
@@ -587,11 +599,11 @@ namespace System.Uniques
                 pchblockC = *((ulong*)&pbyte[16]);
             }
 
-                result = (pchblockA  == * ((ulong*)&g.bytes[0]))
-                && (pchblockB == *((ulong*)&g.bytes[8]))
-                && (pchblockC == *((ulong*)&g.bytes[16]));
-            
-            
+            result = (pchblockA == *((ulong*)&g.bytes[0]))
+            && (pchblockB == *((ulong*)&g.bytes[8]))
+            && (pchblockC == *((ulong*)&g.bytes[16]));
+
+
             return result;
         }
 
@@ -608,6 +620,6 @@ namespace System.Uniques
         public bool Equals(ISerialNumber other)
         {
             throw new NotImplementedException();
-        }     
+        }
     }
 }

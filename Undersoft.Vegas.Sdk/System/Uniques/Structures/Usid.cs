@@ -1,16 +1,28 @@
-﻿using System.Extract;
-using System.Runtime.InteropServices;
-using System;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.Usid.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Uniques
 {
+    using System;
+    using System.Extract;
+    using System.Runtime.InteropServices;
+
     [Serializable]
     [ComVisible(true)]
     [StructLayout(LayoutKind.Sequential, Size = 8)]
     public unsafe struct Usid : IFormattable, IComparable
         , IComparable<IUnique>, IEquatable<IUnique>, IUnique
     {
-        private fixed byte bytes[8];       
+        private fixed byte bytes[8];
 
         private ulong _KeyBlock
         {
@@ -49,7 +61,7 @@ namespace System.Uniques
         }
         public Usid(ushort z, ushort y, uint x)
         {
-            fixed(byte* pbytes = bytes)
+            fixed (byte* pbytes = bytes)
             {
                 *((uint*)pbytes) = x;
                 *((uint*)(pbytes + 4)) = y;
@@ -59,7 +71,7 @@ namespace System.Uniques
         public Usid(object key)
         {
             fixed (byte* n = bytes)
-                *((ulong*)n) = key.UniqueKey64();            
+                *((ulong*)n) = key.UniqueKey64();
         }
 
         public byte[] this[int offset]
@@ -67,7 +79,7 @@ namespace System.Uniques
             get
             {
                 if (offset > 0 && offset < 8)
-                {                   
+                {
                     int l = (8 - offset);
                     byte[] r = new byte[l];
                     fixed (byte* pbyte = bytes)
@@ -112,7 +124,7 @@ namespace System.Uniques
         }
 
         public byte[] GetUniqueBytes()
-        {          
+        {
             return GetBytes();
         }
 
@@ -149,7 +161,7 @@ namespace System.Uniques
         {
             get
             {
-             
+
                 fixed (byte* pbyte = bytes)
                     return *((ushort*)(pbyte + 4));
             }
@@ -182,7 +194,7 @@ namespace System.Uniques
         public bool IsEmpty
         {
             get { return (UniqueKey == 0); }
-        }             
+        }
 
         public override int GetHashCode()
         {
@@ -302,7 +314,7 @@ namespace System.Uniques
             {
                 return new Usid();
             }
-        }        
+        }
 
         public char[] ToHexTetraChars()
         {

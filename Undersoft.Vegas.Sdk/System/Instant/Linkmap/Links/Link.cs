@@ -14,6 +14,9 @@ namespace System.Instant.Linking
 {
     using System.Uniques;
 
+    /// <summary>
+    /// Defines the <see cref="Link" />.
+    /// </summary>
     [JsonObject]
     [Serializable]
     public class Link : IUnique
@@ -26,6 +29,9 @@ namespace System.Instant.Linking
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Link"/> class.
+        /// </summary>
         public Link()
         {
             Name = Unique.NewKey.ToString() + "_L";
@@ -34,16 +40,27 @@ namespace System.Instant.Linking
             Target = new LinkMember(this, LinkSite.Target);
             Linker.Map.Links.Put(this);
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Link"/> class.
+        /// </summary>
+        /// <param name="origin">The origin<see cref="IFigures"/>.</param>
+        /// <param name="target">The target<see cref="IFigures"/>.</param>
         public Link(IFigures origin, IFigures target)
         {
             Name = origin.Type.Name + "_" + target.Type.Name;
             UniqueKey = Name.UniqueKey64();
             Origin = new LinkMember(origin, this, LinkSite.Origin);
-            Target = new LinkMember(target, this, LinkSite.Target);            
+            Target = new LinkMember(target, this, LinkSite.Target);
             origin.Linker.TargetLinks.Put(this);
             target.Linker.OriginLinks.Put(this);
             Linker.Map.Links.Put(this);
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Link"/> class.
+        /// </summary>
+        /// <param name="origin">The origin<see cref="IFigures"/>.</param>
+        /// <param name="target">The target<see cref="IFigures"/>.</param>
+        /// <param name="keyRubric">The keyRubric<see cref="IRubric"/>.</param>
         public Link(IFigures origin, IFigures target, IRubric keyRubric) : this(origin, target)
         {
             var originRubric = origin.Rubrics[keyRubric];
@@ -58,9 +75,15 @@ namespace System.Instant.Linking
             OriginKeys.Update();
             TargetKeys.Update();
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Link"/> class.
+        /// </summary>
+        /// <param name="origin">The origin<see cref="IFigures"/>.</param>
+        /// <param name="target">The target<see cref="IFigures"/>.</param>
+        /// <param name="keyRubrics">The keyRubrics<see cref="IRubrics"/>.</param>
         public Link(IFigures origin, IFigures target, IRubrics keyRubrics) : this(origin, target)
         {
-            foreach(IUnique rubric in keyRubrics)
+            foreach (IUnique rubric in keyRubrics)
             {
                 var originRubric = origin.Rubrics[rubric];
                 var targetRubric = target.Rubrics[rubric];
@@ -75,6 +98,12 @@ namespace System.Instant.Linking
                 TargetKeys.Update();
             }
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Link"/> class.
+        /// </summary>
+        /// <param name="origin">The origin<see cref="IFigures"/>.</param>
+        /// <param name="target">The target<see cref="IFigures"/>.</param>
+        /// <param name="keyRubricNames">The keyRubricNames<see cref="string[]"/>.</param>
         public Link(IFigures origin, IFigures target, string[] keyRubricNames) : this(origin, target)
         {
             foreach (var name in keyRubricNames)
@@ -97,14 +126,24 @@ namespace System.Instant.Linking
 
         #region Properties
 
+        /// <summary>
+        /// Gets the Empty.
+        /// </summary>
         public IUnique Empty => Ussn.Empty;
 
-        public ulong UniqueKey { get => serialcode.UniqueKey; set => serialcode.UniqueKey = value; }
-
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Origin.
+        /// </summary>
         public LinkMember Origin { get; set; }
 
+        /// <summary>
+        /// Gets or sets the OriginKeys.
+        /// </summary>
         public IRubrics OriginKeys
         {
             get
@@ -118,6 +157,9 @@ namespace System.Instant.Linking
             }
         }
 
+        /// <summary>
+        /// Gets or sets the OriginName.
+        /// </summary>
         public string OriginName
         {
             get { return Origin.Name; }
@@ -127,6 +169,9 @@ namespace System.Instant.Linking
             }
         }
 
+        /// <summary>
+        /// Gets or sets the OriginRubrics.
+        /// </summary>
         public IRubrics OriginRubrics
         {
             get
@@ -139,16 +184,19 @@ namespace System.Instant.Linking
             }
         }
 
-        public ulong UniqueSeed { get => serialcode.UniqueSeed; set => serialcode.UniqueSeed = value; }
+        /// <summary>
+        /// Gets or sets the SerialCode.
+        /// </summary>
+        public Ussc SerialCode { get => serialcode; set => serialcode = value; }
 
-        public Ussc SerialCode
-        {
-            get => serialcode;
-            set => serialcode = value;            
-        }
-
+        /// <summary>
+        /// Gets or sets the Target.
+        /// </summary>
         public LinkMember Target { get; set; }
 
+        /// <summary>
+        /// Gets or sets the TargetKeys.
+        /// </summary>
         public IRubrics TargetKeys
         {
             get
@@ -162,6 +210,9 @@ namespace System.Instant.Linking
             }
         }
 
+        /// <summary>
+        /// Gets or sets the TargetName.
+        /// </summary>
         public string TargetName
         {
             get { return Target.Name; }
@@ -171,6 +222,9 @@ namespace System.Instant.Linking
             }
         }
 
+        /// <summary>
+        /// Gets or sets the TargetRubrics.
+        /// </summary>
         public IRubrics TargetRubrics
         {
             get
@@ -183,25 +237,53 @@ namespace System.Instant.Linking
             }
         }
 
+        /// <summary>
+        /// Gets or sets the UniqueKey.
+        /// </summary>
+        public ulong UniqueKey { get => serialcode.UniqueKey; set => serialcode.UniqueKey = value; }
+
+        /// <summary>
+        /// Gets or sets the UniqueSeed.
+        /// </summary>
+        public ulong UniqueSeed { get => serialcode.UniqueSeed; set => serialcode.UniqueSeed = value; }
+
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// The CompareTo.
+        /// </summary>
+        /// <param name="other">The other<see cref="IUnique"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
         public int CompareTo(IUnique other)
         {
             return serialcode.CompareTo(other);
         }
 
+        /// <summary>
+        /// The Equals.
+        /// </summary>
+        /// <param name="other">The other<see cref="IUnique"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool Equals(IUnique other)
         {
             return serialcode.Equals(other);
         }
 
+        /// <summary>
+        /// The GetBytes.
+        /// </summary>
+        /// <returns>The <see cref="byte[]"/>.</returns>
         public byte[] GetBytes()
         {
             return serialcode.GetBytes();
         }
 
+        /// <summary>
+        /// The GetUniqueBytes.
+        /// </summary>
+        /// <returns>The <see cref="byte[]"/>.</returns>
         public byte[] GetUniqueBytes()
         {
             return serialcode.GetUniqueBytes();

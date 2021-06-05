@@ -28,6 +28,8 @@ namespace System.Instant.Linking
 
     #endregion
 
+
+
     public class Links : BaseCatalog<Link>, IUnique
     {
         private Ussn serialcode;
@@ -92,7 +94,7 @@ namespace System.Instant.Linking
             return new Card<Link>();
         }
 
-        public override ICard<Link> NewCard(ulong  key, Link value)
+        public override ICard<Link> NewCard(ulong key, Link value)
         {
             return new Card<Link>(key, value);
         }

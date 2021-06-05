@@ -1,19 +1,42 @@
-﻿using System;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Threading;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Mathset.Compiler.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Mathset
 {
+    using System;
+    using System.Reflection;
+    using System.Reflection.Emit;
+
+    /// <summary>
+    /// Defines the <see cref="Compiler" />.
+    /// </summary>
     public class Compiler
     {
-        static ModuleBuilder MODULE;
-        static AssemblyBuilder ASSEMBLY;
-        static int CLASS_ID;
-        static bool COLLECT_MODE = false;       // optional
-        static string TYPE_PREFIX = "ENTER_THE_MATHLINE";
-        static string EXE_NAME = "GENERATED_CODE";
+        #region Fields
 
+        internal static AssemblyBuilder ASSEMBLY;
+        internal static int CLASS_ID;
+        internal static bool COLLECT_MODE = false;// optional
+        internal static string EXE_NAME = "GENERATED_CODE";
+        internal static ModuleBuilder MODULE;
+        internal static string TYPE_PREFIX = "ENTER_THE_MATHLINE";
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether CollectMode.
+        /// </summary>
         public static bool CollectMode
         {
             get { return COLLECT_MODE; }
@@ -28,14 +51,23 @@ namespace System.Instant.Mathset
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Compile.
+        /// </summary>
+        /// <param name="formula">The formula<see cref="Formula"/>.</param>
+        /// <returns>The <see cref="CombinedMathset"/>.</returns>
         public static CombinedMathset Compile(Formula formula)
         {
             if (MODULE == null)
             {
                 AssemblyName assemblyName = new AssemblyName();
                 assemblyName.Name = "EmittedAssembly";
-               
-                ASSEMBLY = AssemblyBuilder.DefineDynamicAssembly(assemblyName, CollectMode ? AssemblyBuilderAccess.RunAndCollect : AssemblyBuilderAccess.Run);              
+
+                ASSEMBLY = AssemblyBuilder.DefineDynamicAssembly(assemblyName, CollectMode ? AssemblyBuilderAccess.RunAndCollect : AssemblyBuilderAccess.Run);
                 MODULE = ASSEMBLY.DefineDynamicModule("EmittedModule");
                 CLASS_ID = 0;
             }
@@ -75,6 +107,8 @@ namespace System.Instant.Mathset
             computation.SetParams(context.ParamCards, context.Count);
 
             return computation;
-        }       
+        }
+
+        #endregion
     }
 }

@@ -1,28 +1,96 @@
-﻿using System.Net.Sockets;
-using System.IO;
-using System;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Extract.Stock.IStockContext.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Extract.Stock
 {
+    using System;
+
+    /// <summary>
+    /// Defines the <see cref="IStockContext" />.
+    /// </summary>
     public interface IStockContext : ISerialBuffer, IDisposable
     {
-        string Path { get; set; }
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the BufferSize.
+        /// </summary>
+        long BufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ClientCount.
+        /// </summary>
+        int ClientCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Elements.
+        /// </summary>
+        int Elements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the File.
+        /// </summary>
         string File { get; set; }
 
-        ushort StockId { get; set; }
-        ushort SectorId { get; set; }
-
-        long BufferSize { get; set; }
-        long UsedSize { get; set; }
+        /// <summary>
+        /// Gets or sets the FreeSize.
+        /// </summary>
         long FreeSize { get; set; }
 
-        int ItemSize { get; set; }
-        int ItemCount { get; set; }
+        /// <summary>
+        /// Gets or sets the ItemCapacity.
+        /// </summary>
         long ItemCapacity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ItemCount.
+        /// </summary>
+        int ItemCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ItemSize.
+        /// </summary>
+        int ItemSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the NodeCount.
+        /// </summary>
         int NodeCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Path.
+        /// </summary>
+        string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SectorId.
+        /// </summary>
+        ushort SectorId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ServerCount.
+        /// </summary>
         int ServerCount { get; set; }
-        int ClientCount { get; set; }
-        int Elements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StockId.
+        /// </summary>
+        ushort StockId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UsedSize.
+        /// </summary>
+        long UsedSize { get; set; }
+
+        #endregion
     }
 }

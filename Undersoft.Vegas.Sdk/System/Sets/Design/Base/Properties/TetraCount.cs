@@ -8,6 +8,7 @@
     @version 0.7.1.r.d (Feb 7, 2020)                                            
     @licence MIT                                       
  *********************************************************************************/
+
 namespace System.Sets.Basedeck
 {
     public struct TetraCount
@@ -59,5 +60,4 @@ namespace System.Sets.Basedeck
         public int EvenNegativeCount;
         public int OddNegativeCount;
     }
-
 }

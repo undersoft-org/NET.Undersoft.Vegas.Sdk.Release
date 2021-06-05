@@ -25,17 +25,14 @@ namespace System.Labors
         /// Defines the Always.
         /// </summary>
         Always,
-
         /// <summary>
         /// Defines the Single.
         /// </summary>
         Single,
-
         /// <summary>
         /// Defines the Schedule.
         /// </summary>
         Schedule,
-
         /// <summary>
         /// Defines the Nome.
         /// </summary>

@@ -36,6 +36,9 @@ namespace System.IO
 
     #endregion
 
+    /// <summary>
+    /// Defines the <see cref="MarkedSegment" />.
+    /// </summary>
     public struct MarkedSegment
     {
         #region Fields
@@ -48,12 +51,20 @@ namespace System.IO
 
         #region Properties
 
+        /// <summary>
+        /// Gets the Count.
+        /// </summary>
         public int Count => (int)(Length / ItemSize);
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// The ItemOffset.
+        /// </summary>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="long"/>.</returns>
         public long ItemOffset(int index)
         {
             return (Offset + (index * ItemSize));

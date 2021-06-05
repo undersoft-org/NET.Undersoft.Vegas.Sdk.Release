@@ -33,6 +33,7 @@ namespace System.Labors
         #endregion
     }
 
+
     public class Laboratory
     {
         public Laboratory(LaborMethods _methods, Scope _scope = null)

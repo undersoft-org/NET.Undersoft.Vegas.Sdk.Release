@@ -1,29 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Mathset.CombinedFormula.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Mathset
 {
+    using System;
+    using System.Reflection.Emit;
+
     // assign and generate reckond loops
+    /// <summary>
+    /// Defines the <see cref="CombinedFormula" />.
+    /// </summary>
     [Serializable]
     public class CombinedFormula : Formula
     {
-        int iI, lL;
+        #region Fields
+
         public Formula expr;
         public LeftFormula lexpr;
-        MathsetSize size
-        { get { return expr.Size;  } }
         public bool partial = false;
+        internal int iI, lL;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CombinedFormula"/> class.
+        /// </summary>
+        /// <param name="m">The m<see cref="LeftFormula"/>.</param>
+        /// <param name="e">The e<see cref="Formula"/>.</param>
+        /// <param name="partial">The partial<see cref="bool"/>.</param>
         public CombinedFormula(LeftFormula m, Formula e, bool partial = false)
         {
             lexpr = m;
             expr = e;
             this.partial = partial;
-        }     
+        }
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the size.
+        /// </summary>
+        internal MathsetSize size
+        {
+            get { return expr.Size; }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Compile.
+        /// </summary>
+        /// <param name="g">The g<see cref="ILGenerator"/>.</param>
+        /// <param name="cc">The cc<see cref="CompilerContext"/>.</param>
         public override void Compile(ILGenerator g, CompilerContext cc)
         {
             bool biloop = size.rows > 1 && size.cols > 1;
@@ -60,7 +103,7 @@ namespace System.Instant.Mathset
                     g.Emit(OpCodes.Ldc_I4_0);   // i = 0
                     g.Emit(OpCodes.Stloc, i);
                     g.Emit(OpCodes.Ldarg_0);
-                    g.Emit(OpCodes.Ldc_I4_0);  
+                    g.Emit(OpCodes.Ldc_I4_0);
                     g.EmitCall(OpCodes.Callvirt, typeof(CombinedMathset).GetMethod("GetRowCount", new Type[] { typeof(int) }), null);
                     g.Emit(OpCodes.Stloc, l);
 
@@ -108,19 +151,8 @@ namespace System.Instant.Mathset
                     lexpr.CompileAssign(g, cc, true, true);
                 }
             }
-
         }
 
-        //public override double Math(int i, int j)
-        //{
-        //    for (int q = 0; q < size.rows; q++)
-        //    {
-        //        for (int k = 0; k < size.cols; k++)
-        //            lexpr.Assign(q, k, expr.Math(q, k));
-        //    }
-        //    return 0;
-        //}     
+        #endregion
     }
-
-			 
 }

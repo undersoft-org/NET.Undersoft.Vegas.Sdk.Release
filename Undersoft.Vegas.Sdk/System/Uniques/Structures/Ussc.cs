@@ -1,18 +1,29 @@
-﻿using System.Collections.Specialized;
-using System.Extract;
-using System.Runtime.InteropServices;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.Ussc.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Uniques
 {
+    using System.Extract;
+    using System.Runtime.InteropServices;
+
     [Serializable]
     [ComVisible(true)]
-    [StructLayout(LayoutKind.Sequential, Size = 16)]  
-    public unsafe struct Ussc : IFormattable, IComparable 
-        , IComparable<Ussc>, IEquatable<Ussc>, IUnique       
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    public unsafe struct Ussc : IFormattable, IComparable
+        , IComparable<Ussc>, IEquatable<Ussc>, IUnique
     {
-        private fixed byte bytes[16];              
+        private fixed byte bytes[16];
 
-        public ulong    UniqueKey
+        public ulong UniqueKey
         {
             get
             {
@@ -27,7 +38,7 @@ namespace System.Uniques
             }
         }
 
-        public ulong    UniqueSeed
+        public ulong UniqueSeed
         {
             get
             {
@@ -49,7 +60,7 @@ namespace System.Uniques
             }
         }
         public Ussc(string s)
-        {          
+        {
             this.FromHexTetraChars(s.ToCharArray());    //RR
         }
         public Ussc(byte[] b)
@@ -76,12 +87,12 @@ namespace System.Uniques
             }
         }
         public Ussc(byte[] key, ulong seed)
-        {          
+        {
             fixed (byte* n = bytes)
             {
                 fixed (byte* s = key)
                     *((ulong*)n) = *((ulong*)s);
-                *((ulong*)(n + 8)) = seed;            
+                *((ulong*)(n + 8)) = seed;
             }
         }
         public Ussc(object key, ulong seed)
@@ -106,7 +117,7 @@ namespace System.Uniques
         {
             get
             {
-                if (offset != 0)                   
+                if (offset != 0)
                 {
                     int l = 16 - offset;
                     byte[] r = new byte[l];
@@ -140,7 +151,7 @@ namespace System.Uniques
                     {
                         Extractor.CopyBlock(pbyte, rbyte, 16);
                     }
-                }               
+                }
             }
         }
         public byte[] this[int offset, int length]
@@ -150,8 +161,8 @@ namespace System.Uniques
                 if (offset < 16)
                 {
                     if ((16 - offset) > length)
-                    length = 16 - offset;
-               
+                        length = 16 - offset;
+
                     byte[] r = new byte[length];
                     fixed (byte* pbyte = bytes)
                     fixed (byte* rbyte = r)
@@ -161,7 +172,7 @@ namespace System.Uniques
                     return r;
                 }
                 return null;
-               
+
             }
             set
             {
@@ -171,7 +182,7 @@ namespace System.Uniques
                         length = 16 - offset;
                     if (value.Length < length)
                         length = value.Length;
-                   
+
                     fixed (byte* rbyte = value)
                     fixed (byte* pbyte = bytes)
                     {
@@ -179,7 +190,7 @@ namespace System.Uniques
                     }
                 }
             }
-        }      
+        }
 
         public void SetBytes(byte[] value, int offset)
         {
@@ -188,7 +199,7 @@ namespace System.Uniques
 
         public byte[] GetBytes(int offset, int length)
         {
-           return this[offset, length];
+            return this[offset, length];
         }
 
         public byte[] GetBytes()
@@ -203,7 +214,7 @@ namespace System.Uniques
         }
 
         public byte[] GetUniqueBytes()
-        {            
+        {
             byte[] kbytes = new byte[8];
             fixed (byte* b = bytes)
             fixed (byte* k = kbytes)
@@ -239,13 +250,13 @@ namespace System.Uniques
         public bool IsEmpty
         {
             get { return (UniqueKey == 0); }
-        }      
+        }
 
         public override int GetHashCode()
         {
-            fixed (byte* pbyte = &this[0,8].BitAggregate64to32()[0])
+            fixed (byte* pbyte = &this[0, 8].BitAggregate64to32()[0])
                 return *((int*)pbyte);
-        }      
+        }
 
         public int CompareTo(object value)
         {
@@ -292,8 +303,8 @@ namespace System.Uniques
         }
 
         public override String ToString()
-        {           
-            return new string(this.ToHexTetraChars());  
+        {
+            return new string(this.ToHexTetraChars());
         }
 
         public String ToString(String format)
@@ -302,7 +313,7 @@ namespace System.Uniques
         }
 
         public string ToString(string format, IFormatProvider formatProvider)
-        {         
+        {
             return new string(this.ToHexTetraChars());  //RR
         }
 
@@ -329,7 +340,7 @@ namespace System.Uniques
         {
             return new Ussc(l);
         }
-        public static implicit operator byte[](Ussc s)
+        public static implicit operator byte[] (Ussc s)
         {
             return s.GetBytes();
         }
@@ -337,7 +348,7 @@ namespace System.Uniques
         public static Ussc Empty
         {
             get { return new Ussc(new byte[24]); }
-        }      
+        }
 
         IUnique IUnique.Empty
         {
@@ -345,12 +356,12 @@ namespace System.Uniques
             {
                 return new Ussc();
             }
-        }       
+        }
 
         public char[] ToHexTetraChars()
         {
             char[] pchchar = new char[16];
-            ulong pchblock;  
+            ulong pchblock;
             int pchlength = 16;
             byte pchbyte;
             int idx = 0;
@@ -364,18 +375,18 @@ namespace System.Uniques
                 pchblock = pchblock & 0x0000ffffffffffffL;  //each block has 6 bytes
                 for (int i = 0; i < 8; i++)
                 {
-                    pchbyte = (byte)(pchblock & 0x3fL);                    
+                    pchbyte = (byte)(pchblock & 0x3fL);
                     pchchar[idx] = (pchbyte).ToHexTetraChar();
-                    idx++;                    
+                    idx++;
                     pchblock = pchblock >> 6;
                     if (pchbyte != 0x00) pchlength = idx;
                 }
             }
-                        
+
             char[] pchchartrim = new char[pchlength];
             Array.Copy(pchchar, 0, pchchartrim, 0, pchlength);
 
-            return pchchartrim;            
+            return pchchartrim;
         }
 
         public void FromHexTetraChars(char[] pchchar)
@@ -392,7 +403,7 @@ namespace System.Uniques
             {
                 pchblock = 0x00L;
                 blocklength = Math.Min(8, Math.Max(0, pchlength - 8 * j));        //required if trimmed zeros, length < 16
-                idx = Math.Min(pchlength, 8*(j+1)) - 1;                           //required if trimmed zeros, length < 16
+                idx = Math.Min(pchlength, 8 * (j + 1)) - 1;                           //required if trimmed zeros, length < 16
 
                 for (int i = 0; i < blocklength; i++)     //8 chars per block, each 6 bits
                 {
@@ -414,7 +425,7 @@ namespace System.Uniques
                     *((ulong*)&pbyte[j * 6]) = pchblock;
 
                 }
-            }                                    
+            }
         }
 
         public bool EqualsContent(Ussc g)
@@ -431,8 +442,8 @@ namespace System.Uniques
 
             result = (pchblockA == *((ulong*)&g.bytes[0]))
             && (pchblockB == *((uint*)&g.bytes[8]));
-            
-            
+
+
             return result;
         }
 

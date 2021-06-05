@@ -21,6 +21,9 @@ namespace System.Sets.Spectrum
     {
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="vEBTreeLevel"/> class.
+        /// </summary>
         public vEBTreeLevel()
         {
             Level = 0;

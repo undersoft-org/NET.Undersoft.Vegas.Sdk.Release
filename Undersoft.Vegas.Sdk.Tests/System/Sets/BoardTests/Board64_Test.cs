@@ -1,17 +1,42 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using Xunit;
+/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Sets.Board64_Test.cs.Tests
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Sets.Tests
 {
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Xunit;
+
+    /// <summary>
+    /// Defines the <see cref="Board64_Test" />.
+    /// </summary>
     public class Board64_Test : SharedDeckTestHelper
     {
-        public object holder = new object();
+        #region Fields
+
         public static int threadCount = 0;
+        public object holder = new object();
         public Task[] s1 = new Task[6];
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Board64_Test"/> class.
+        /// </summary>
         public Board64_Test() : base()
         {
             registry = new Board64<string>();
@@ -21,11 +46,95 @@ namespace System.Sets.Tests
             Logfile.LogFileName = $"Board64_{DateTime.Now.ToFileTime().ToString()}_Test.log";
         }
 
-        private void publicBoard_MultiThread_TCallback_Test(Task[] t)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Board64_Concurrent_IndentifierKeys_Test.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        [Fact]
+        public async Task Board64_Concurrent_IndentifierKeys_Test()
         {
-            Debug.WriteLine($"Test Finished");
+            Task t = board64_MultiThread_Test(identifierKeyTestCollection);
+            await t.ConfigureAwait(true);
         }
 
+        /// <summary>
+        /// The Board64_Concurrent_IntKeys_Test.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        [Fact]
+        public async Task Board64_Concurrent_IntKeys_Test()
+        {
+            Task t = board64_MultiThread_Test(intKeyTestCollection);
+            await t.ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// The Board64_Concurrent_LongKeys_Test.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        [Fact]
+        public async Task Board64_Concurrent_LongKeys_Test()
+        {
+            Task t = board64_MultiThread_Test(longKeyTestCollection);
+            await t.ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// The Board64_Concurrent_StringKeys_Test.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        [Fact]
+        public async Task Board64_Concurrent_StringKeys_Test()
+        {
+            Task t = board64_MultiThread_Test(stringKeyTestCollection);
+            await t.ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// The Board64_IndentifierKeys_Test.
+        /// </summary>
+        [Fact]
+        public void Board64_IndentifierKeys_Test()
+        {
+            SharedDeck_ThreadIntegrated_Test(identifierKeyTestCollection.Take(100000).ToArray());
+        }
+
+        /// <summary>
+        /// The Board64_IntKeys_Test.
+        /// </summary>
+        [Fact]
+        public void Board64_IntKeys_Test()
+        {
+            SharedDeck_ThreadIntegrated_Test(intKeyTestCollection.Take(100000).ToArray());
+        }
+
+        /// <summary>
+        /// The Board64_LongKeys_Test.
+        /// </summary>
+        [Fact]
+        public void Board64_LongKeys_Test()
+        {
+            SharedDeck_ThreadIntegrated_Test(longKeyTestCollection.Take(100000).ToArray());
+        }
+
+        /// <summary>
+        /// The Board64_StringKeys_Test.
+        /// </summary>
+        [Fact]
+        public void Board64_StringKeys_Test()
+        {
+            SharedDeck_ThreadIntegrated_Test(stringKeyTestCollection.Take(100000).ToArray());
+        }
+
+        /// <summary>
+        /// The board64_MultiThread_Test.
+        /// </summary>
+        /// <param name="collection">The collection<see cref="IList{KeyValuePair{object, string}}"/>.</param>
+        /// <returns>The <see cref="Task"/>.</returns>
         private Task board64_MultiThread_Test(IList<KeyValuePair<object, string>> collection)
         {
             registry = new Board64<string>();
@@ -45,59 +154,17 @@ namespace System.Sets.Tests
             }
 
             return Task.Factory.ContinueWhenAll(s1, new Action<Task[]>(a => { publicBoard_MultiThread_TCallback_Test(a); }));
-
         }
 
-        [Fact]
-        public async Task Board64_Concurrent_StringKeys_Test()
+        /// <summary>
+        /// The publicBoard_MultiThread_TCallback_Test.
+        /// </summary>
+        /// <param name="t">The t<see cref="Task[]"/>.</param>
+        private void publicBoard_MultiThread_TCallback_Test(Task[] t)
         {
-            Task t = board64_MultiThread_Test(stringKeyTestCollection);
-            await t.ConfigureAwait(true);
+            Debug.WriteLine($"Test Finished");
         }
 
-        [Fact]
-        public void Board64_StringKeys_Test()
-        {
-            SharedDeck_ThreadIntegrated_Test(stringKeyTestCollection.Take(100000).ToArray());
-        }
-
-        [Fact]
-        public async Task Board64_Concurrent_IntKeys_Test()
-        {
-            Task t = board64_MultiThread_Test(intKeyTestCollection);
-            await t.ConfigureAwait(true);
-        }
-
-        [Fact]
-        public void Board64_IntKeys_Test()
-        {
-            SharedDeck_ThreadIntegrated_Test(intKeyTestCollection.Take(100000).ToArray());
-        }
-
-        [Fact]
-        public async Task Board64_Concurrent_LongKeys_Test()
-        {
-            Task t = board64_MultiThread_Test(longKeyTestCollection);
-            await t.ConfigureAwait(true);
-        }
-
-        [Fact]
-        public void Board64_LongKeys_Test()
-        {
-            SharedDeck_ThreadIntegrated_Test(longKeyTestCollection.Take(100000).ToArray());
-        }
-
-        [Fact]
-        public async Task Board64_Concurrent_IndentifierKeys_Test()
-        {
-            Task t = board64_MultiThread_Test(identifierKeyTestCollection);
-            await t.ConfigureAwait(true);
-        }
-
-        [Fact]
-        public void Board64_IndentifierKeys_Test()
-        {
-            SharedDeck_ThreadIntegrated_Test(identifierKeyTestCollection.Take(100000).ToArray());
-        }
+        #endregion
     }
 }

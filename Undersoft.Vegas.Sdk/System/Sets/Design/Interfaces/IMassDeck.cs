@@ -1,6 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Sets.IMassDeck.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
+
 /***************************************************
     Copyright (c) 2020 Undersoft
 
@@ -15,7 +24,9 @@ using System.Collections.Concurrent;
  ***************************************************/
 namespace System.Sets
 {
-    public interface IMassDeck<V>: IDeck<V> where V : IUnique
+    using System.Collections.Generic;
+
+    public interface IMassDeck<V> : IDeck<V> where V : IUnique
     {
         V this[object key, ulong seed] { get; set; }
 
@@ -23,7 +34,7 @@ namespace System.Sets
 
         bool Contains(V item, ulong seed);
 
-        V Get(object key, ulong seed);       
+        V Get(object key, ulong seed);
 
         bool TryGet(object key, ulong seed, out ICard<V> output);
         bool TryGet(object key, ulong sedd, out V output);
@@ -42,15 +53,15 @@ namespace System.Sets
 
         ICard<V> Put(object key, ulong seed, V value);
         ICard<V> Put(object key, ulong seed, object value);
-           void Put(IList<V> cards, ulong seed);
-           void Put(IEnumerable<V> cards, ulong seed);
-       ICard<V> Put(V value, ulong seed);
+        void Put(IList<V> cards, ulong seed);
+        void Put(IEnumerable<V> cards, ulong seed);
+        ICard<V> Put(V value, ulong seed);
 
-           V Remove(object key, ulong seed);
+        V Remove(object key, ulong seed);
         bool TryRemove(object key, ulong seed);
 
         ICard<V> NewCard(V value, ulong seed);
         ICard<V> NewCard(object key, ulong seed, V value);
         ICard<V> NewCard(ulong key, ulong seed, V value);
-    }    
+    }
 }

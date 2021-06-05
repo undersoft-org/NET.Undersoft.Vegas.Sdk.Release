@@ -1,27 +1,26 @@
-﻿using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-using System.Uniques;
-using System.Extract;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
 
-/*************************************************************************************
-    Copyright (c) 2020 Undersoft
+   System.Sets.TetraSet.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
-    System.Sets.Basedeck.TetraSet
-              
-    @author Darius Hanc                                                  
-    @project NETStandard.Undersoft.SDK                      
-    @version 0.7.1.r.d (Feb 7, 2020)                                            
-    @licence MIT                                       
- *********************************************************************************/
 namespace System.Sets.Basedeck
 {
+    using System.Collections;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Uniques;
+
     public abstract class TetraSet<V> : Uniqueness, ICollection<V>, IList<V>, IDeck<V>, ICollection<ICard<V>>, IList<ICard<V>>,
                                                      IProducerConsumerCollection<V>, IDisposable, ICollection<IUnique<V>>
     {
-        #region Globals       
 
         static protected readonly float CONFLICTS_PERCENT_LIMIT = 0.25f;
         static protected readonly float REMOVED_PERCENT_LIMIT = 0.15f;
@@ -33,7 +32,7 @@ namespace System.Sets.Basedeck
         protected TetraCount tcount;
         //protected int[] msbId;
         //protected uulong[] mixMask;
-        protected int count, conflicts, removed, size, minSize;     
+        protected int count, conflicts, removed, size, minSize;
 
         protected void countIncrement(uint tid)
         {
@@ -66,9 +65,7 @@ namespace System.Sets.Basedeck
             --removed;
         }
 
-        #endregion
 
-        #region Constructor
 
         public TetraSet(int capacity = 16, HashBits bits = HashBits.bit64) : base(bits)
         {
@@ -89,9 +86,7 @@ namespace System.Sets.Basedeck
             this.Add(collection);
         }
 
-        #endregion
 
-        #region Settings
 
         public virtual ICard<V> First { get { return first; } }
         public virtual ICard<V> Last { get { return last; } }
@@ -102,38 +97,33 @@ namespace System.Sets.Basedeck
         public virtual bool IsSynchronized { get; set; }
         public virtual object SyncRoot { get; set; }
 
-        #endregion
 
-        #region Operations
 
-        #region Item
 
         ICard<V> IList<ICard<V>>.this[int index]
         {
             get => GetCard(index);
             set => GetCard(index).Set(value);
         }
-        public virtual         V this[int index]
+        public virtual V this[int index]
         {
             get => GetCard(index).Value;
             set => GetCard(index).Value = value;
         }
-        protected              V this[ulong hashkey]
+        protected V this[ulong hashkey]
         {
             get { return InnerGet(hashkey); }
             set { InnerPut(hashkey, value); }
         }
-        public virtual         V this[object key]
+        public virtual V this[object key]
         {
             get { return InnerGet(unique.Key(key)); }
             set { InnerPut(unique.Key(key), value); }
         }
 
-        #endregion
 
-        #region Get
 
-        public virtual             V InnerGet(ulong key)
+        public virtual V InnerGet(ulong key)
         {
             uint tid = getTetraId(key);
             int _size = tsize[tid];
@@ -154,24 +144,24 @@ namespace System.Sets.Basedeck
 
             return default(V);
         }
-        public                          V Get(ulong key)
+        public V Get(ulong key)
         {
             return InnerGet(key);
         }
-        public virtual                  V Get(object key)
+        public virtual V Get(object key)
         {
             return InnerGet(unique.Key(key));
         }
-        public virtual                  V Get(IUnique<V> key)
+        public virtual V Get(IUnique<V> key)
         {
             return InnerGet(unique.Key(key));
         }
-        public virtual                  V Get(IUnique key)
+        public virtual V Get(IUnique key)
         {
             return InnerGet(unique.Key(key));
         }
 
-        public virtual       bool InnerTryGet(ulong key, out ICard<V> output)
+        public virtual bool InnerTryGet(ulong key, out ICard<V> output)
         {
             output = null;
             uint tid = getTetraId(key);
@@ -194,11 +184,11 @@ namespace System.Sets.Basedeck
             }
             return false;
         }
-        public virtual            bool TryGet(object key, out ICard<V> output)
+        public virtual bool TryGet(object key, out ICard<V> output)
         {
             return InnerTryGet(unique.Key(key), out output);
         }
-        public virtual            bool TryGet(object key, out V output)
+        public virtual bool TryGet(object key, out V output)
         {
             output = default(V);
             ICard<V> card = null;
@@ -209,7 +199,7 @@ namespace System.Sets.Basedeck
             }
             return false;
         }
-        public                    bool TryGet(ulong key, out V output)
+        public bool TryGet(ulong key, out V output)
         {
             output = default(V);
             ICard<V> card = null;
@@ -221,7 +211,7 @@ namespace System.Sets.Basedeck
             return false;
         }
 
-        public virtual  ICard<V> InnerGetCard(ulong key)
+        public virtual ICard<V> InnerGetCard(ulong key)
         {
             uint tid = getTetraId(key);
             int _size = tsize[tid];
@@ -241,46 +231,44 @@ namespace System.Sets.Basedeck
 
             return null;
         }
-        public abstract      ICard<V> GetCard(int index);
-        public virtual       ICard<V> GetCard(object key)
+        public abstract ICard<V> GetCard(int index);
+        public virtual ICard<V> GetCard(object key)
         {
             return InnerGetCard(unique.Key(key));
-        }       
-        public               ICard<V> GetCard(ulong key)
+        }
+        public ICard<V> GetCard(ulong key)
         {
             return InnerGetCard(key);
         }
 
-        #endregion
 
-        #region Put
 
         protected abstract ICard<V> InnerPut(ulong key, V value);
         protected abstract ICard<V> InnerPut(V value);
         protected abstract ICard<V> InnerPut(ICard<V> value);
-        public virtual          ICard<V> Put(ulong key, object value)
+        public virtual ICard<V> Put(ulong key, object value)
         {
             return InnerPut(key, (V)value);
         }
-        public virtual          ICard<V> Put(ulong key, V value)
+        public virtual ICard<V> Put(ulong key, V value)
         {
             return InnerPut(key, value);
         }
-        public virtual          ICard<V> Put(object key, V value)
+        public virtual ICard<V> Put(object key, V value)
         {
             return InnerPut(unique.Key(key), value);
         }
-        public virtual          ICard<V> Put(object key, object value)
+        public virtual ICard<V> Put(object key, object value)
         {
             if (value is V)
                 return InnerPut(unique.Key(key), (V)value);
             return null;
         }
-        public virtual          ICard<V> Put(ICard<V> _card)
+        public virtual ICard<V> Put(ICard<V> _card)
         {
             return InnerPut(_card);
         }
-        public virtual              void Put(IList<ICard<V>> cards)
+        public virtual void Put(IList<ICard<V>> cards)
         {
             int c = cards.Count;
             for (int i = 0; i < c; i++)
@@ -288,16 +276,16 @@ namespace System.Sets.Basedeck
                 InnerPut(cards[i]);
             }
         }
-        public virtual              void Put(IEnumerable<ICard<V>> cards)
+        public virtual void Put(IEnumerable<ICard<V>> cards)
         {
             foreach (ICard<V> card in cards)
                 InnerPut(card);
         }
-        public virtual          ICard<V> Put(V value)
+        public virtual ICard<V> Put(V value)
         {
-           return InnerPut(value);
+            return InnerPut(value);
         }
-        public virtual              void Put(object value)
+        public virtual void Put(object value)
         {
             if (value is IUnique<V>)
                 Put((IUnique<V>)value);
@@ -306,7 +294,7 @@ namespace System.Sets.Basedeck
             else if (value is ICard<V>)
                 Put((ICard<V>)value);
         }
-        public virtual              void Put(IList<V> cards)
+        public virtual void Put(IList<V> cards)
         {
             int c = cards.Count;
             for (int i = 0; i < c; i++)
@@ -315,25 +303,25 @@ namespace System.Sets.Basedeck
 
             }
         }
-        public virtual              void Put(IEnumerable<V> cards)
+        public virtual void Put(IEnumerable<V> cards)
         {
             foreach (V card in cards)
                 Put(card);
         }
-        public virtual          ICard<V> Put(IUnique<V> value)
+        public virtual ICard<V> Put(IUnique<V> value)
         {
             if (value is ICard<V>)
-               return InnerPut((ICard<V>)value);
-           return InnerPut(value.UniquesAsKey(), value.Value);
+                return InnerPut((ICard<V>)value);
+            return InnerPut(value.UniquesAsKey(), value.Value);
         }
-        public virtual              void Put(IList<IUnique<V>> value)
+        public virtual void Put(IList<IUnique<V>> value)
         {
             foreach (IUnique<V> item in value)
             {
                 Put(item);
             }
         }
-        public virtual              void Put(IEnumerable<IUnique<V>> value)
+        public virtual void Put(IEnumerable<IUnique<V>> value)
         {
             foreach (IUnique<V> item in value)
             {
@@ -341,30 +329,28 @@ namespace System.Sets.Basedeck
             }
         }
 
-        #endregion
 
-        #region Add
 
         protected abstract bool InnerAdd(ulong key, V value);
         protected abstract bool InnerAdd(V value);
         protected abstract bool InnerAdd(ICard<V> value);
-        public virtual          bool Add(ulong key, object value)
+        public virtual bool Add(ulong key, object value)
         {
             return InnerAdd(key, (V)value);
         }
-        public virtual          bool Add(ulong key, V value)
+        public virtual bool Add(ulong key, V value)
         {
             return InnerAdd(key, value);
         }
-        public virtual          bool Add(object key, V value)
+        public virtual bool Add(object key, V value)
         {
             return InnerAdd(unique.Key(key), value);
         }
-        public virtual          void Add(ICard<V> card)
+        public virtual void Add(ICard<V> card)
         {
             InnerAdd(card);
         }
-        public virtual          void Add(IList<ICard<V>> cardList)
+        public virtual void Add(IList<ICard<V>> cardList)
         {
             int c = cardList.Count;
             for (int i = 0; i < c; i++)
@@ -372,12 +358,12 @@ namespace System.Sets.Basedeck
                 InnerAdd(cardList[i]);
             }
         }
-        public virtual          void Add(IEnumerable<ICard<V>> cardTable)
+        public virtual void Add(IEnumerable<ICard<V>> cardTable)
         {
             foreach (ICard<V> card in cardTable)
                 Add(card);
         }
-        public virtual          void Add(V value)
+        public virtual void Add(V value)
         {
             InnerAdd(value);
             //ulong key = unique.Key(value);
@@ -385,7 +371,7 @@ namespace System.Sets.Basedeck
             //    key = autoHashKey(value);
             //InnerAdd(key, value);
         }
-        public virtual          void Add(IList<V> cards)
+        public virtual void Add(IList<V> cards)
         {
             int c = cards.Count;
             for (int i = 0; i < c; i++)
@@ -394,32 +380,32 @@ namespace System.Sets.Basedeck
 
             }
         }
-        public virtual          void Add(IEnumerable<V> cards)
+        public virtual void Add(IEnumerable<V> cards)
         {
             foreach (V card in cards)
                 Add(card);
         }
-        public virtual          void Add(IUnique<V> value)
+        public virtual void Add(IUnique<V> value)
         {
             if (value is ICard<V>)
                 InnerAdd((ICard<V>)value);
             InnerAdd(unique.Key(value), value.Value);
         }
-        public virtual          void Add(IList<IUnique<V>> value)
+        public virtual void Add(IList<IUnique<V>> value)
         {
             foreach (IUnique<V> item in value)
             {
                 Add(item);
             }
         }
-        public virtual          void Add(IEnumerable<IUnique<V>> value)
+        public virtual void Add(IEnumerable<IUnique<V>> value)
         {
             foreach (IUnique<V> item in value)
             {
                 Add(item);
             }
         }
-        public virtual       bool TryAdd(V value)
+        public virtual bool TryAdd(V value)
         {
             //ulong key = unique.Key(value);
             //if (key == 0)
@@ -452,7 +438,7 @@ namespace System.Sets.Basedeck
         }
 
         protected abstract void InnerInsert(int index, ICard<V> item);
-        public virtual          void Insert(int index, ICard<V> item)
+        public virtual void Insert(int index, ICard<V> item)
         {
             // get position index in table, which is an absolute value from key %(modulo) size. Simply it is rest from dividing key and size                           
             ulong key = item.Key;
@@ -499,14 +485,12 @@ namespace System.Sets.Basedeck
                 card = card.Extent;
             }
         }
-        public virtual          void Insert(int index, V item)
+        public virtual void Insert(int index, V item)
         {
             Insert(index, NewCard(unique.Key(item), item));
         }
 
-        #endregion
 
-        #region Queue
 
         public virtual bool Enqueue(V value)
         {
@@ -525,7 +509,7 @@ namespace System.Sets.Basedeck
         {
             return TryDequeue(out output);
         }
-        public virtual    V Dequeue()
+        public virtual V Dequeue()
         {
             V card = default(V);
             TryDequeue(out card);
@@ -556,9 +540,7 @@ namespace System.Sets.Basedeck
             }
             return false;
         }
-        #endregion
 
-        #region Renew
 
         private void renewClear(int capacity)
         {
@@ -572,7 +554,7 @@ namespace System.Sets.Basedeck
                 tsize.ResetAll();
                 table = new TetraTable<V>(this, size);
                 first = EmptyCard();
-                last = first;              
+                last = first;
             }
         }
 
@@ -600,10 +582,8 @@ namespace System.Sets.Basedeck
             renewClear(minSize);
             Put(cards);
         }
-        
-        #endregion
 
-        #region Contains
+
 
         protected bool InnerContainsKey(ulong key)
         {
@@ -651,11 +631,9 @@ namespace System.Sets.Basedeck
             return InnerContainsKey(unique.Key(item));
         }
 
-        #endregion
 
-        #region Remove
 
-        public virtual    V InnerRemove(ulong key)
+        public virtual V InnerRemove(ulong key)
         {
             uint tid = getTetraId(key);
             int _size = tsize[tid];
@@ -684,7 +662,7 @@ namespace System.Sets.Basedeck
         {
             return InnerRemove(unique.Key(item)).Equals(default(V)) ? false : true;
         }
-        public virtual    V Remove(object key)
+        public virtual V Remove(object key)
         {
             return InnerRemove(unique.Key(key));
         }
@@ -727,12 +705,10 @@ namespace System.Sets.Basedeck
             tsize.ResetAll();
             table = new TetraTable<V>(this, size);
             first = EmptyCard();
-            last = first;         
+            last = first;
         }
 
-        #endregion
 
-        #region Collection     
 
         public virtual void CopyTo(ICard<V>[] array, int index)
         {
@@ -826,11 +802,8 @@ namespace System.Sets.Basedeck
             return GetCard(item).Index;
         }
 
-        #endregion
 
-        #endregion
 
-        #region Enumerable
 
         public virtual IEnumerable<V> AsValues()
         {
@@ -868,11 +841,9 @@ namespace System.Sets.Basedeck
             return new CardSeries<V>(this);
         }
 
-        #endregion
 
-        #region Hashtable
 
-        protected static uint  getTetraId(ulong key)
+        protected static uint getTetraId(ulong key)
         {
             return (uint)(((long)key & 1L) - (((long)key & -1L) * 2));
         }
@@ -880,7 +851,7 @@ namespace System.Sets.Basedeck
         {
             // standard hashmap method to establish position / index in table
 
-            return (key % (uint)(size -1));
+            return (key % (uint)(size - 1));
 
             // author's algorithm to establish position / index in table            
             // based on most significant bit - BSR (or equivalent depending on the cpu type) 
@@ -898,7 +869,7 @@ namespace System.Sets.Basedeck
             // based on most significant bit - BSR (or equivalent depending on the cpu type)
             // alsow project must be compiled in x64 format (default) for x86 format proper C lib compilation of BitScan.dll is needed       
 
-          //  return Submix.Map(key, newsize - 1, newMixMask, newMsbId);
+            //  return Submix.Map(key, newsize - 1, newMixMask, newMsbId);
         }
 
         protected virtual void Rehash(int newsize, uint tid)
@@ -1018,7 +989,6 @@ namespace System.Sets.Basedeck
             conflicts -= _oldconflicts;// _conflicts;
         }
 
-        #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -1028,7 +998,7 @@ namespace System.Sets.Basedeck
                 if (disposing)
                 {
                     first = null;
-                    last = null;                                        
+                    last = null;
                 }
 
                 table.Dispose();
@@ -1051,10 +1021,7 @@ namespace System.Sets.Basedeck
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
-        #endregion
 
-        #endregion
 
     }
-
 }

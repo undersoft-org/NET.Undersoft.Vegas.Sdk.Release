@@ -1,72 +1,84 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.ComponentModel;
-using System.Text;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
 
-using System.Data;
+   System.Instant.Mathset.CompilerContext.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Mathset
 {
+    using System;
+    using System.Reflection.Emit;
+
+    #region Delegates
+
+    /// <summary>
+    /// The Evaluator.
+    /// </summary>
     public delegate void Evaluator();
 
+    #endregion
+
+    /// <summary>
+    /// Defines the <see cref="CompilerContext" />.
+    /// </summary>
     [Serializable]
     public class CompilerContext
     {
-        [NonSerialized] int pass = 0;
-        [NonSerialized] int paramCount;
-        [NonSerialized] int indexVariableCount;      
-        [NonSerialized] int[] indexVariables;
-        [NonSerialized] IFigures[] paramTables = new IFigures[10];
+        #region Fields
 
+        [NonSerialized] internal int indexVariableCount;
+        [NonSerialized] internal int[] indexVariables;
+        [NonSerialized] internal int paramCount;
+        [NonSerialized] internal IFigures[] paramTables = new IFigures[10];
+        [NonSerialized] internal int pass = 0;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompilerContext"/> class.
+        /// </summary>
         public CompilerContext()
         {
-            indexVariableCount = 0;         
+            indexVariableCount = 0;
         }
 
-        public int Add(IFigures v)
-        {
-            int index = GetIndexOf(v);
-            if (index < 0)
-            {
-                paramTables[paramCount] = v;
-                return indexVariableCount + paramCount++;
-            }
-            return index;
-        }
+        #endregion
 
-        public int GetIndexOf(IFigures v)
-        {
-            for (int i = 0; i < paramCount; i++)
-                if (paramTables[i] == v) return indexVariableCount + i;
-            return -1;
-        }
-        public int GetSubIndexOf(IFigures v)
-        {
-            for (int i = 0; i < paramCount; i++)
-                if (paramTables[i] == v) return indexVariableCount + i + paramCount;
-            return -1;
-        }
+        #region Properties
 
-        public int GetBufforIndexOf(IFigures v)
-        {
-            for (int i = 0; i < paramCount; i++)
-                if (paramTables[i] == v) return indexVariableCount + i + paramCount + 1;
-            return -1;
-        }
-
+        /// <summary>
+        /// Gets the Count.
+        /// </summary>
         public int Count
         {
             get { return paramCount; }
         }
 
+        /// <summary>
+        /// Gets the ParamCards.
+        /// </summary>
         public IFigures[] ParamCards
         {
             get { return paramTables; }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The GenLocalLoad.
+        /// </summary>
+        /// <param name="g">The g<see cref="ILGenerator"/>.</param>
+        /// <param name="a">The a<see cref="int"/>.</param>
         public static void GenLocalLoad(ILGenerator g, int a)
         {
             switch (a)
@@ -80,6 +92,12 @@ namespace System.Instant.Mathset
                     break;
             }
         }
+
+        /// <summary>
+        /// The GenLocalStore.
+        /// </summary>
+        /// <param name="g">The g<see cref="ILGenerator"/>.</param>
+        /// <param name="a">The a<see cref="int"/>.</param>
         public static void GenLocalStore(ILGenerator g, int a)
         {
             switch (a)
@@ -94,36 +112,35 @@ namespace System.Instant.Mathset
             }
         }
 
-        public bool IsFirstPass()
+        /// <summary>
+        /// The Add.
+        /// </summary>
+        /// <param name="v">The v<see cref="IFigures"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public int Add(IFigures v)
         {
-            return pass == 0;
+            int index = GetIndexOf(v);
+            if (index < 0)
+            {
+                paramTables[paramCount] = v;
+                return indexVariableCount + paramCount++;
+            }
+            return index;
         }
 
-        public void NextPass()
-        {
-            pass++;
-            // local variables array
-            indexVariables = new int[indexVariableCount];
-            for (int i = 0; i < indexVariableCount; i++)
-                indexVariables[i] = i;
-        }
-
-        // index access by variable number		
-        public int GetIndexVariable(int number)
-        {
-            return indexVariables[number];
-        }
-
-        public void SetIndexVariable(int number, int value)
-        {
-            indexVariables[number] = value;
-        }
-
+        /// <summary>
+        /// The AllocIndexVariable.
+        /// </summary>
+        /// <returns>The <see cref="int"/>.</returns>
         public int AllocIndexVariable()
         {
             return indexVariableCount++;
         }
 
+        /// <summary>
+        /// The GenerateLocalInit.
+        /// </summary>
+        /// <param name="g">The g<see cref="ILGenerator"/>.</param>
         public void GenerateLocalInit(ILGenerator g)
         {
             // declare indexes
@@ -152,5 +169,85 @@ namespace System.Instant.Mathset
                 g.Emit(OpCodes.Stloc, indexVariableCount + i);
             }
         }
+
+        /// <summary>
+        /// The GetBufforIndexOf.
+        /// </summary>
+        /// <param name="v">The v<see cref="IFigures"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public int GetBufforIndexOf(IFigures v)
+        {
+            for (int i = 0; i < paramCount; i++)
+                if (paramTables[i] == v) return indexVariableCount + i + paramCount + 1;
+            return -1;
+        }
+
+        /// <summary>
+        /// The GetIndexOf.
+        /// </summary>
+        /// <param name="v">The v<see cref="IFigures"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public int GetIndexOf(IFigures v)
+        {
+            for (int i = 0; i < paramCount; i++)
+                if (paramTables[i] == v) return indexVariableCount + i;
+            return -1;
+        }
+
+        // index access by variable number
+        /// <summary>
+        /// The GetIndexVariable.
+        /// </summary>
+        /// <param name="number">The number<see cref="int"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public int GetIndexVariable(int number)
+        {
+            return indexVariables[number];
+        }
+
+        /// <summary>
+        /// The GetSubIndexOf.
+        /// </summary>
+        /// <param name="v">The v<see cref="IFigures"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public int GetSubIndexOf(IFigures v)
+        {
+            for (int i = 0; i < paramCount; i++)
+                if (paramTables[i] == v) return indexVariableCount + i + paramCount;
+            return -1;
+        }
+
+        /// <summary>
+        /// The IsFirstPass.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
+        public bool IsFirstPass()
+        {
+            return pass == 0;
+        }
+
+        /// <summary>
+        /// The NextPass.
+        /// </summary>
+        public void NextPass()
+        {
+            pass++;
+            // local variables array
+            indexVariables = new int[indexVariableCount];
+            for (int i = 0; i < indexVariableCount; i++)
+                indexVariables[i] = i;
+        }
+
+        /// <summary>
+        /// The SetIndexVariable.
+        /// </summary>
+        /// <param name="number">The number<see cref="int"/>.</param>
+        /// <param name="value">The value<see cref="int"/>.</param>
+        public void SetIndexVariable(int number, int value)
+        {
+            indexVariables[number] = value;
+        }
+
+        #endregion
     }
 }

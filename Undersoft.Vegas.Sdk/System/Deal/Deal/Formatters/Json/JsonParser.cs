@@ -1,20 +1,28 @@
-﻿using System.Instant;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-//#if NET40
-//using System.Dynamic;
-//#endif
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Uniques;
-using System.Dynamic;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Deal.JsonParser.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Deal
-{    
+{
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Instant;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;
+    using System.Uniques;
+
+    #region Enums
+
     public enum JsonToken
     {
         Unknown,
@@ -29,25 +37,42 @@ namespace System.Deal
         True,
         False,
         Null
-    } /// Possible JSON tokens in parsed input.
+    }
 
+    #endregion
+
+    /// <summary>
+    /// Defines the <see cref="IJson" />.
+    /// </summary>
+    public interface IJson
+    {
+    }
+    ///Possible JSON tokens in parsed input.
+    /// <summary>
+    /// Defines the <see cref="InvalidJsonException" />.
+    /// </summary>
     public class InvalidJsonException : Exception
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InvalidJsonException"/> class.
+        /// </summary>
+        /// <param name="message">The message<see cref="string"/>.</param>
         public InvalidJsonException(string message)
             : base(message)
         {
-
         }
+
+        #endregion
     }
 
-    public interface IJson { }
-
+    /// <summary>
+    /// Defines the <see cref="JsonParser" />.
+    /// </summary>
     public class JsonParser
-    {      
-        private static readonly 
-            IDictionary<string, 
-                IDictionary<Type, 
-                    PropertyInfo[]>> _cache;
+    {
+        #region Fields
 
         private static readonly char[] _base16 = new[]
                              {
@@ -56,6 +81,10 @@ namespace System.Deal
                                  '8', '9', 'A', 'B',
                                  'C', 'D', 'E', 'F'
                              };
+        private static readonly
+            IDictionary<string,
+                IDictionary<Type,
+                    PropertyInfo[]>> _cache;
         private static readonly string[][] _unichar = new string[][]
                              {
                                new string[] { new string('"', 1),  @"\""", },
@@ -67,29 +96,48 @@ namespace System.Deal
                                new string[] { new string('\r', 1), @"\r", },
                                new string[] { new string('\t', 1), @"\t", }
                              };
-        private static NumberStyles    _numbers = NumberStyles.Float;
+        private static NumberStyles _numbers = NumberStyles.Float;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes static members of the <see cref="JsonParser"/> class.
+        /// </summary>
         static JsonParser()
         {
             _cache = new Dictionary<string, IDictionary<Type, PropertyInfo[]>>();
             foreach (string cmplx in Enum.GetNames(typeof(DealComplexity)))
-                _cache.Add(cmplx, new Dictionary<Type, PropertyInfo[]>());            
+                _cache.Add(cmplx, new Dictionary<Type, PropertyInfo[]>());
         }
 
-        public static object Serialize(object instance)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Deserialize.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="json">The json<see cref="string"/>.</param>
+        /// <returns>The <see cref="T"/>.</returns>
+        public static T Deserialize<T>(string json)
         {
-            Type type = instance.GetType();
-            IDictionary <string, object> bag = GetBagForObject(type, instance);
+            T instance;
+            var map = PrepareInstance(out instance);
+            var bag = FromJson(json);
 
-            return ToJson(bag);
-        }
-        public static string Serialize<T>(T instance)
-        {
-            IDictionary<string, object> bag = GetBagForObject(instance);
-
-            return ToJson(bag);
+            DeserializeImpl(map, bag, instance);
+            return instance;
         }
 
+        /// <summary>
+        /// The Deserialize.
+        /// </summary>
+        /// <param name="json">The json<see cref="string"/>.</param>
+        /// <param name="type">The type<see cref="Type"/>.</param>
+        /// <returns>The <see cref="object"/>.</returns>
         public static object Deserialize(string json, Type type)
         {
             object instance;
@@ -99,26 +147,14 @@ namespace System.Deal
             DeserializeImpl(map, bag, instance);
             return instance;
         }
-        public static T      Deserialize<T>(string json)
-        {
-            T instance;
-            var map = PrepareInstance(out instance);
-            var bag = FromJson(json);
 
-            DeserializeImpl(map, bag, instance);
-            return instance;
-        }     
-
-        private static void DeserializeImpl(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, object instance)
-        {
-            DeserializeType(map, bag, instance);
-        }
-        private static void DeserializeImpl<T>(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, T instance)
-        {
-            DeserializeType(map, bag, instance);
-        }
-
-        public static void  DeserializeType(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, object instance)
+        /// <summary>
+        /// The DeserializeType.
+        /// </summary>
+        /// <param name="map">The map<see cref="IEnumerable{PropertyInfo}"/>.</param>
+        /// <param name="bag">The bag<see cref="IDictionary{string, object}"/>.</param>
+        /// <param name="instance">The instance<see cref="object"/>.</param>
+        public static void DeserializeType(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, object instance)
         {
             System.Globalization.NumberFormatInfo nfi = new System.Globalization.NumberFormatInfo();
             nfi.NumberDecimalSeparator = ".";
@@ -142,30 +178,30 @@ namespace System.Deal
 
                 if (value != null && value.GetType() == typeof(String))
                     if (value.Equals("null"))
-                        value = null;                
+                        value = null;
 
                 if (value != null)
-                {                                                                 
-                    if (info.PropertyType == typeof(byte[]))                    
-                       if (value.GetType() == typeof(List<object>)) value = ((List<object>)value).Select(symbol => Convert.ToByte(symbol)).ToArray();
-                                                               else value = ((object[])value).Select(symbol => Convert.ToByte(symbol)).ToArray();
-                    else if (info.PropertyType == typeof(Ussn))     value = new Ussn(value.ToString());
-                    else if (info.PropertyType == typeof(Single))   value = Convert.ToSingle(value, nfi);
+                {
+                    if (info.PropertyType == typeof(byte[]))
+                        if (value.GetType() == typeof(List<object>)) value = ((List<object>)value).Select(symbol => Convert.ToByte(symbol)).ToArray();
+                        else value = ((object[])value).Select(symbol => Convert.ToByte(symbol)).ToArray();
+                    else if (info.PropertyType == typeof(Ussn)) value = new Ussn(value.ToString());
+                    else if (info.PropertyType == typeof(Single)) value = Convert.ToSingle(value, nfi);
                     else if (info.PropertyType == typeof(DateTime)) value = Convert.ToDateTime(value);
-                    else if (info.PropertyType == typeof(double))   value = Convert.ToDouble(value, nfi);                    
-                    else if (info.PropertyType == typeof(decimal))  value = Convert.ToDecimal(value, nfi);                    
-                    else if (info.PropertyType == typeof(int))      value = Convert.ToInt32(value);
-                    else if (info.PropertyType == typeof(long))     value = Convert.ToInt64(value);
-                    else if (info.PropertyType == typeof(short))    value = Convert.ToInt16(value);                    
-                    else if (info.PropertyType == typeof(bool))     value = Convert.ToBoolean(value);
+                    else if (info.PropertyType == typeof(double)) value = Convert.ToDouble(value, nfi);
+                    else if (info.PropertyType == typeof(decimal)) value = Convert.ToDecimal(value, nfi);
+                    else if (info.PropertyType == typeof(int)) value = Convert.ToInt32(value);
+                    else if (info.PropertyType == typeof(long)) value = Convert.ToInt64(value);
+                    else if (info.PropertyType == typeof(short)) value = Convert.ToInt16(value);
+                    else if (info.PropertyType == typeof(bool)) value = Convert.ToBoolean(value);
 
                     else if (info.PropertyType == typeof(IFigure))
                     {
                         object n = info.GetValue(instance, null);
-                        DeserializeType(n.GetType().GetProperties(), 
-                                        (Dictionary<string, object>)value, n);   
+                        DeserializeType(n.GetType().GetProperties(),
+                                        (Dictionary<string, object>)value, n);
                         mutated = true;
-                    }                
+                    }
                     else if (info.PropertyType == typeof(DealContext))
                     {
                         object inst = new object();
@@ -204,9 +240,14 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The FromJson.
+        /// </summary>
+        /// <param name="json">The json<see cref="string"/>.</param>
+        /// <returns>The <see cref="IDictionary{string, object}"/>.</returns>
         public static IDictionary<string, object> FromJson(string json)
         {
-            
+
             JsonToken type;
 
             var result = FromJson(json, out type);
@@ -220,9 +261,16 @@ namespace System.Deal
 
             return result;
         }
+
+        /// <summary>
+        /// The FromJson.
+        /// </summary>
+        /// <param name="json">The json<see cref="string"/>.</param>
+        /// <param name="type">The type<see cref="JsonToken"/>.</param>
+        /// <returns>The <see cref="IDictionary{string, object}"/>.</returns>
         public static IDictionary<string, object> FromJson(string json, out JsonToken type)
         {
-            
+
             var data = json.ToCharArray();
             var index = 0;
 
@@ -242,24 +290,158 @@ namespace System.Deal
             return ParseObject(data, ref index);
         }
 
+        /// <summary>
+        /// The PrepareInstance.
+        /// </summary>
+        /// <param name="instance">The instance<see cref="object"/>.</param>
+        /// <param name="type">The type<see cref="Type"/>.</param>
+        /// <returns>The <see cref="IEnumerable{PropertyInfo}"/>.</returns>
+        public static IEnumerable<PropertyInfo> PrepareInstance(out object instance, Type type)
+        {
+            instance = Activator.CreateInstance(type);
+
+            CacheReflection(type);
+
+            return _cache["Standard"][type];
+        }
+
+        /// <summary>
+        /// The PrepareInstance.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="instance">The instance<see cref="T"/>.</param>
+        /// <returns>The <see cref="IEnumerable{PropertyInfo}"/>.</returns>
+        public static IEnumerable<PropertyInfo> PrepareInstance<T>(out T instance)
+        {
+            instance = Activator.CreateInstance<T>();
+            Type item = typeof(T);
+
+            CacheReflection(item);
+
+            return _cache["Standard"][item];
+        }
+
+        /// <summary>
+        /// The Serialize.
+        /// </summary>
+        /// <param name="instance">The instance<see cref="object"/>.</param>
+        /// <returns>The <see cref="object"/>.</returns>
+        public static object Serialize(object instance)
+        {
+            Type type = instance.GetType();
+            IDictionary<string, object> bag = GetBagForObject(type, instance);
+
+            return ToJson(bag);
+        }
+
+        /// <summary>
+        /// The Serialize.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="instance">The instance<see cref="T"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
+        public static string Serialize<T>(T instance)
+        {
+            IDictionary<string, object> bag = GetBagForObject(instance);
+
+            return ToJson(bag);
+        }
+
+        /// <summary>
+        /// The ToJson.
+        /// </summary>
+        /// <param name="bag">The bag<see cref="IDictionary{int, object}"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
+        public static string ToJson(IDictionary<int, object> bag, DealComplexity complexity = DealComplexity.Standard)
+        {
+
+            var sb = new StringBuilder(0);
+
+            SerializeItem(sb, bag, null, complexity);
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// The ToJson.
+        /// </summary>
+        /// <param name="bag">The bag<see cref="IDictionary{string, object}"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         public static string ToJson(IDictionary<string, object> bag, DealComplexity complexity = DealComplexity.Standard)
-        {            
+        {
             var sb = new StringBuilder(4096);
 
             SerializeItem(sb, bag, null, complexity);
 
             return sb.ToString();
         }
-        public static string ToJson(IDictionary<int, object> bag, DealComplexity complexity = DealComplexity.Standard)
+
+        /// <summary>
+        /// The BaseConvert.
+        /// </summary>
+        /// <param name="input">The input<see cref="int"/>.</param>
+        /// <param name="charSet">The charSet<see cref="char[]"/>.</param>
+        /// <param name="minLength">The minLength<see cref="int"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
+        internal static string BaseConvert(int input, char[] charSet, int minLength)
         {
-            
-            var sb = new StringBuilder(0);
-            
-            SerializeItem(sb, bag, null, complexity);
+            var sb = new StringBuilder();
+            var @base = charSet.Length;
+
+            while (input > 0)
+            {
+                var index = input % @base;
+                sb.Insert(0, new[] { charSet[index] });
+                input = input / @base;
+            }
+
+            while (sb.Length < minLength)
+            {
+                sb.Insert(0, "0");
+            }
 
             return sb.ToString();
         }
 
+        /// <summary>
+        /// The CacheReflection.
+        /// </summary>
+        /// <param name="item">The item<see cref="Type"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        internal static void CacheReflection(Type item, DealComplexity complexity = DealComplexity.Standard)
+        {
+            if (_cache[complexity.ToString()].ContainsKey(item))
+                return;
+
+            PropertyInfo[] verified = new PropertyInfo[0];
+            PropertyInfo[] prepare = item.GetJsonProperties(complexity);
+            if (prepare != null)
+                verified = prepare;
+
+            _cache[complexity.ToString()].Add(item, verified);
+        }
+
+        /// <summary>
+        /// The GetBagForObject.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="instance">The instance<see cref="T"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="IDictionary{string, object}"/>.</returns>
+        internal static IDictionary<string, object> GetBagForObject<T>(T instance, DealComplexity complexity = DealComplexity.Standard)
+        {
+            return GetBagForObject(typeof(T), instance, complexity);
+        }
+
+        /// <summary>
+        /// The GetBagForObject.
+        /// </summary>
+        /// <param name="type">The type<see cref="Type"/>.</param>
+        /// <param name="instance">The instance<see cref="object"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="IDictionary{string, object}"/>.</returns>
         internal static IDictionary<string, object> GetBagForObject(Type type, object instance, DealComplexity complexity = DealComplexity.Standard)
         {
             CacheReflection(type, complexity);
@@ -297,197 +479,102 @@ namespace System.Deal
 
             return bag;
         }
-        internal static IDictionary<string, object> GetBagForObject<T>(T instance, DealComplexity complexity = DealComplexity.Standard)
+
+        /// <summary>
+        /// The GetKeyword.
+        /// </summary>
+        /// <param name="word">The word<see cref="string"/>.</param>
+        /// <param name="target">The target<see cref="JsonToken"/>.</param>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <param name="result">The result<see cref="JsonToken"/>.</param>
+        internal static void GetKeyword(string word, JsonToken target, IList<char> data, ref int index, ref JsonToken result)
         {
-            return GetBagForObject(typeof(T), instance, complexity);
-        }
-
-        internal static Dictionary<string, object> InitializeBag()
-        {
-            return new Dictionary<string, object>(
-                0, StringComparer.OrdinalIgnoreCase
-                );
-        }
-
-        public static IEnumerable<PropertyInfo> PrepareInstance(out object instance, Type type)
-        {
-            instance = Activator.CreateInstance(type);
-
-            CacheReflection(type);
-
-            return _cache["Standard"][type];
-        }
-        public static IEnumerable<PropertyInfo> PrepareInstance<T>(out T instance)
-        {
-            instance = Activator.CreateInstance<T>();
-            Type item = typeof(T);
-
-            CacheReflection(item);
-
-            return _cache["Standard"][item];
-        }
-
-        internal static void CacheReflection(Type item, DealComplexity complexity = DealComplexity.Standard)
-        {
-            if (_cache[complexity.ToString()].ContainsKey(item))
-                return;
-
-            PropertyInfo[] verified = new PropertyInfo[0];
-            PropertyInfo[] prepare = item.GetJsonProperties(complexity);
-            if (prepare != null)
-                verified = prepare;
-
-            _cache[complexity.ToString()].Add(item, verified);
-        }
-
-        internal static void SerializeItem(StringBuilder sb, object item, string key = null, DealComplexity complexity = DealComplexity.Standard)
-        {          
-            if (item == null)
+            int buffer = data.Count - index;
+            if (buffer < word.Length)
             {
-                sb.Append("null");
                 return;
             }
 
-            if (item is IDictionary)
+            for (var i = 0; i < word.Length; i++)
             {
-                SerializeObject(item, sb, false, complexity);
-                return;
-            }           
-
-            if (item is ICollection && !(item is string))
-            {
-                SerializeArray(item, sb, complexity);
-                return;
-            }
-
-            if (item is Usid)
-            {
-                sb.Append("\"" + ((Usid)item).ToString() + "\"");
-                return;
-            }
-
-            if (item is Ussn)
-            {
-                sb.Append("\"" + ((Ussn)item).ToString() + "\"");
-                return;
-            }
-
-            if (item is DateTime)
-            {
-                sb.Append("\""+((DateTime)item).ToString("yyyy-MM-dd HH:mm:dd")+"\"");
-                return;
-            }
-
-            if (item is Enum)
-            {
-                sb.Append("\"" + item.ToString() + "\"");
-                return;
-            }
-
-            if (item is Type)
-            {
-                sb.Append("\"" + ((Type)item).FullName + "\"");
-                return;
-            }
-
-            if (item is bool)
-            {
-                sb.Append(((bool)item).ToString().ToLower());
-                return;
-            }
-
-            if(item is ValueType)
-            {
-                sb.Append(item.ToString().Replace(',','.'));
-                return;
-            }
-
-            IDictionary<string, object> 
-                bag = GetBagForObject(item.GetType(), item, complexity);
-
-            SerializeItem(sb, bag, key, complexity);
-        }
-        internal static void SerializeDateTime(StringBuilder sb, object item = null)
-        {
-            sb.Append("\"" + ((DateTime)item).ToString("yyyy-MM-dd HH:mm:dd") + "\"");
-            
-            //var elapsed = DateTime.UtcNow - new DateTime(1970, 1, 1).ToUniversalTime();
-            //var epoch = (long)elapsed.TotalSeconds;
-            //SerializeString(sb, epoch);
-        }
-        internal static void SerializeArray(object item, StringBuilder sb, DealComplexity complexity = DealComplexity.Standard)
-        {
-            Type type = item.GetType();
-            if (type.IsDefined(typeof(JsonObjectAttribute), false))
-            {
-                var bag = GetBagForObject(item.GetType(), item, complexity);
-                SerializeItem(sb, bag, null, complexity);
-            }
-            else
-            {
-                ICollection array = (ICollection)item;
-
-                sb.Append("[");
-                var count = 0;
-
-                var total = array.Cast<object>().Count();                
-                foreach (object element in array)
+                if (data[index + i] != word[i])
                 {
-                    SerializeItem(sb, element, null, complexity);
-                    count++;
-                    if (count < total)
-                        sb.Append(",");
+                    return;
                 }
-                sb.Append("]");
             }
-        }
-        internal static void SerializeObject(object item, StringBuilder sb, bool intAsKey = false, DealComplexity complexity = DealComplexity.Standard)
-        {
-            sb.Append("{");
 
-            IDictionary nested = (IDictionary)item;
-            int i = 0;
-            int count = nested.Count;
-            foreach (DictionaryEntry entry in nested)
+            result = target;
+            index += word.Length;
+        }
+
+        /// <summary>
+        /// The GetTokenFromSymbol.
+        /// </summary>
+        /// <param name="symbol">The symbol<see cref="char"/>.</param>
+        /// <returns>The <see cref="JsonToken"/>.</returns>
+        internal static JsonToken GetTokenFromSymbol(char symbol)
+        {
+            return GetTokenFromSymbol(symbol, JsonToken.Unknown);
+        }
+
+        /// <summary>
+        /// The GetTokenFromSymbol.
+        /// </summary>
+        /// <param name="symbol">The symbol<see cref="char"/>.</param>
+        /// <param name="token">The token<see cref="JsonToken"/>.</param>
+        /// <returns>The <see cref="JsonToken"/>.</returns>
+        internal static JsonToken GetTokenFromSymbol(char symbol, JsonToken token)
+        {
+            switch (symbol)
             {
-                sb.Append("\"" + entry.Key + "\"");
-                sb.Append(":");
-
-                object value = entry.Value;
-                if (value is string)
-                {
-                    SerializeString(sb, value);
-                }
-                else
-                {
-                    SerializeItem(sb, entry.Value, entry.Key.ToString(), complexity);
-                }
-                if (i < count - 1)
-                {
-                    sb.Append(",");
-                }
-                i++;
+                case '{':
+                    token = JsonToken.LeftBrace;
+                    break;
+                case '}':
+                    token = JsonToken.RightBrace;
+                    break;
+                case ':':
+                    token = JsonToken.Colon;
+                    break;
+                case ',':
+                    token = JsonToken.Comma;
+                    break;
+                case '[':
+                    token = JsonToken.LeftBracket;
+                    break;
+                case ']':
+                    token = JsonToken.RightBracket;
+                    break;
+                case '"':
+                    token = JsonToken.String;
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '.':
+                case 'e':
+                case 'E':
+                case '+':
+                case '-':
+                    token = JsonToken.Number;
+                    break;
             }
-
-            sb.Append("}");
-        }
-        internal static void SerializeString(StringBuilder sb, object item)
-        {
-            char[] symbols = ((string)item).ToCharArray();
-            SerializeUnicode(sb, symbols);
-        }
-        internal static void SerializeUnicode(StringBuilder sb, char[] symbols)
-        {
-            sb.Append("\"");
-
-            string[] unicodes = symbols.Select(symbol => GetUnicode(symbol)).ToArray();
-
-            foreach (var unicode in unicodes)
-                sb.Append(unicode);          
-
-            sb.Append("\"");
+            return token;
         }
 
+        /// <summary>
+        /// The GetUnicode.
+        /// </summary>
+        /// <param name="character">The character<see cref="char"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         internal static string GetUnicode(char character)
         {
             switch (character)
@@ -502,38 +589,169 @@ namespace System.Deal
                 case '\t': return @"\t";
             }
             return new string(character, 1);
-
-            //var code = (int)character;
-            //var basicLatin = code >= 32 && code <= 243;
-            //if (basicLatin)
-            //{
-            //    return new string(character, 1);
-            //}
-
-            //var unicode = BaseConvert(code, _base16, 4);
-            //return string.Concat("\\u", unicode);
         }
-        internal static string BaseConvert(int input, char[] charSet, int minLength)
+
+        /// <summary>
+        /// The IgnoreWhitespace.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <param name="symbol">The symbol<see cref="char"/>.</param>
+        internal static void IgnoreWhitespace(IList<char> data, ref int index, char symbol)
         {
-            var sb = new StringBuilder();
-            var @base = charSet.Length;
-
-            while (input > 0)
-            {
-                var index = input % @base;
-                sb.Insert(0, new[] { charSet[index] });
-                input = input / @base;
-            }
-
-            while (sb.Length < minLength)
-            {
-                sb.Insert(0, "0");
-            }
-
-            return sb.ToString();
+            var token = JsonToken.Unknown;
+            IgnoreWhitespace(data, ref index, ref token, symbol);
+            return;
         }
 
-        internal static IDictionary<string, object> 
+        /// <summary>
+        /// The IgnoreWhitespace.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <param name="token">The token<see cref="JsonToken"/>.</param>
+        /// <param name="symbol">The symbol<see cref="char"/>.</param>
+        /// <returns>The <see cref="JsonToken"/>.</returns>
+        internal static JsonToken IgnoreWhitespace(IList<char> data, ref int index, ref JsonToken token, char symbol)
+        {
+            switch (symbol)
+            {
+                case ' ':
+                case '\\':
+                case '/':
+                case '\b':
+                case '\f':
+                case '\n':
+                case '\r':
+                case '\t':
+                    index++;
+                    token = NextToken(data, ref index);
+                    break;
+            }
+            return token;
+        }
+
+        /// <summary>
+        /// The InitializeBag.
+        /// </summary>
+        /// <returns>The <see cref="Dictionary{string, object}"/>.</returns>
+        internal static Dictionary<string, object> InitializeBag()
+        {
+            return new Dictionary<string, object>(
+                0, StringComparer.OrdinalIgnoreCase
+                );
+        }
+
+        /// <summary>
+        /// The NextToken.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="JsonToken"/>.</returns>
+        internal static JsonToken NextToken(IList<char> data, ref int index)
+        {
+
+            var symbol = data[index];
+            var token = GetTokenFromSymbol(symbol);
+            token = IgnoreWhitespace(data, ref index, ref token, symbol);
+
+            GetKeyword("true", JsonToken.True, data, ref index, ref token);
+            GetKeyword("false", JsonToken.False, data, ref index, ref token);
+            GetKeyword("null", JsonToken.Null, data, ref index, ref token);
+
+            return token;
+        }
+
+        /// <summary>
+        /// The ParseArray.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="IEnumerable{object}"/>.</returns>
+        internal static IEnumerable<object>
+                               ParseArray(IList<char> data, ref int index)
+        {
+            var result = new List<object>();
+
+            index++; // Skip first bracket
+            while (index < data.Count - 1)
+            {
+                var token = NextToken(data, ref index);
+                switch (token)
+                {
+                    // End Tokens
+                    case JsonToken.Unknown:             // Bad Data
+                        throw new InvalidJsonException(string.Format(
+                            "Invalid JSON found while parsing an array at index {0}.", index
+                            ));
+                    case JsonToken.RightBracket:        // End Array
+                        index++;
+                        return result;
+                    // Skip Tokens
+                    case JsonToken.Comma:               // Separator
+                    case JsonToken.RightBrace:          // End Object
+                    case JsonToken.Colon:               // Separator
+                        index++;
+                        break;
+                    // Value Tokens
+                    case JsonToken.LeftBrace:           // Start Object
+                        var nested = ParseObject(data, ref index);
+                        result.Add(nested);
+                        break;
+                    case JsonToken.LeftBracket:         // Start Array
+                    case JsonToken.String:
+                    case JsonToken.Number:
+                    case JsonToken.True:
+                    case JsonToken.False:
+                    case JsonToken.Null:
+                        var value = ParseValue(data, ref index);
+                        result.Add(value);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// The ParseNumber.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="object"/>.</returns>
+        internal static object ParseNumber(IList<char> data, ref int index)
+        {
+            var symbol = data[index];
+            IgnoreWhitespace(data, ref index, symbol);
+
+            var start = index;
+            var length = 0;
+            while (ParseToken(JsonToken.Number, data, ref index))
+            {
+                length++;
+                index++;
+            }
+
+            double result;
+            var buffer = new string(data.Skip(start).Take(length).ToArray());
+            if (!double.TryParse(buffer, _numbers, CultureInfo.InvariantCulture, out result))
+            {
+                throw new InvalidJsonException(
+                    string.Format("Value '{0}' was not a valid JSON number", buffer)
+                    );
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// The ParseObject.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="IDictionary{string, object}"/>.</returns>
+        internal static IDictionary<string, object>
                                ParseObject(IList<char> data, ref int index)
         {
             var result = InitializeBag();
@@ -591,53 +809,14 @@ namespace System.Deal
 
             return result;
         }
-        internal static IEnumerable<object> 
-                               ParseArray(IList<char> data, ref int index)
-        {
-            var result = new List<object>();
 
-            index++; // Skip first bracket
-            while (index < data.Count - 1)
-            {
-                var token = NextToken(data, ref index);
-                switch (token)
-                {
-                    // End Tokens
-                    case JsonToken.Unknown:             // Bad Data
-                        throw new InvalidJsonException(string.Format(
-                            "Invalid JSON found while parsing an array at index {0}.", index
-                            ));
-                    case JsonToken.RightBracket:        // End Array
-                        index++;
-                        return result;
-                    // Skip Tokens
-                    case JsonToken.Comma:               // Separator
-                    case JsonToken.RightBrace:          // End Object
-                    case JsonToken.Colon:               // Separator
-                        index++;
-                        break;
-                    // Value Tokens
-                    case JsonToken.LeftBrace:           // Start Object
-                        var nested = ParseObject(data, ref index);
-                        result.Add(nested);
-                        break;
-                    case JsonToken.LeftBracket:         // Start Array
-                    case JsonToken.String:
-                    case JsonToken.Number:
-                    case JsonToken.True:
-                    case JsonToken.False:
-                    case JsonToken.Null:
-                        var value = ParseValue(data, ref index);
-                        result.Add(value);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return result;
-        }
-        internal static KeyValuePair<string, object> 
+        /// <summary>
+        /// The ParsePair.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="KeyValuePair{string, object}"/>.</returns>
+        internal static KeyValuePair<string, object>
                                ParsePair(IList<char> data, ref int index)
         {
             var valid = true;
@@ -664,11 +843,13 @@ namespace System.Deal
             var value = ParseValue(data, ref index);
             return new KeyValuePair<string, object>(name, value);
         }
-        internal static bool   ParseToken(JsonToken token, IList<char> data, ref int index)
-        {
-            var nextToken = NextToken(data, ref index);
-            return token == nextToken;
-        }
+
+        /// <summary>
+        /// The ParseString.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         internal static string ParseString(IList<char> data, ref int index)
         {
             var symbol = data[index];
@@ -740,6 +921,26 @@ namespace System.Deal
                 symbol = data[++index];
             }
         }
+
+        /// <summary>
+        /// The ParseToken.
+        /// </summary>
+        /// <param name="token">The token<see cref="JsonToken"/>.</param>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
+        internal static bool ParseToken(JsonToken token, IList<char> data, ref int index)
+        {
+            var nextToken = NextToken(data, ref index);
+            return token == nextToken;
+        }
+
+        /// <summary>
+        /// The ParseValue.
+        /// </summary>
+        /// <param name="data">The data<see cref="IList{char}"/>.</param>
+        /// <param name="index">The index<see cref="int"/>.</param>
+        /// <returns>The <see cref="object"/>.</returns>
         internal static object ParseValue(IList<char> data, ref int index)
         {
 
@@ -774,143 +975,224 @@ namespace System.Deal
                     throw new ArgumentOutOfRangeException();
             }
         }
-        internal static object ParseNumber(IList<char> data, ref int index)
-        {
-            var symbol = data[index];
-            IgnoreWhitespace(data, ref index, symbol);
 
-            var start = index;
-            var length = 0;
-            while (ParseToken(JsonToken.Number, data, ref index))
+        /// <summary>
+        /// The SerializeArray.
+        /// </summary>
+        /// <param name="item">The item<see cref="object"/>.</param>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        internal static void SerializeArray(object item, StringBuilder sb, DealComplexity complexity = DealComplexity.Standard)
+        {
+            Type type = item.GetType();
+            if (type.IsDefined(typeof(JsonObjectAttribute), false))
             {
-                length++;
-                index++;
+                var bag = GetBagForObject(item.GetType(), item, complexity);
+                SerializeItem(sb, bag, null, complexity);
             }
-     
-            double result;
-            var buffer = new string(data.Skip(start).Take(length).ToArray());
-            if (!double.TryParse(buffer, _numbers, CultureInfo.InvariantCulture, out result))
+            else
             {
-                throw new InvalidJsonException(
-                    string.Format("Value '{0}' was not a valid JSON number", buffer)
-                    );
+                ICollection array = (ICollection)item;
+
+                sb.Append("[");
+                var count = 0;
+
+                var total = array.Cast<object>().Count();
+                foreach (object element in array)
+                {
+                    SerializeItem(sb, element, null, complexity);
+                    count++;
+                    if (count < total)
+                        sb.Append(",");
+                }
+                sb.Append("]");
             }
-            return result;
         }
 
-        internal static JsonToken NextToken(IList<char> data, ref int index)
+        /// <summary>
+        /// The SerializeDateTime.
+        /// </summary>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="item">The item<see cref="object"/>.</param>
+        internal static void SerializeDateTime(StringBuilder sb, object item = null)
         {
-    
-            var symbol = data[index];
-            var token = GetTokenFromSymbol(symbol);
-            token = IgnoreWhitespace(data, ref index, ref token, symbol);
-
-            GetKeyword("true", JsonToken.True, data, ref index, ref token);
-            GetKeyword("false", JsonToken.False, data, ref index, ref token);
-            GetKeyword("null", JsonToken.Null, data, ref index, ref token);
-
-            return token;
+            sb.Append("\"" + ((DateTime)item).ToString("yyyy-MM-dd HH:mm:dd") + "\"");
         }
 
-        internal static JsonToken GetTokenFromSymbol(char symbol)
+        /// <summary>
+        /// The SerializeItem.
+        /// </summary>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="item">The item<see cref="object"/>.</param>
+        /// <param name="key">The key<see cref="string"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        internal static void SerializeItem(StringBuilder sb, object item, string key = null, DealComplexity complexity = DealComplexity.Standard)
         {
-            return GetTokenFromSymbol(symbol, JsonToken.Unknown);
-        }
-        internal static JsonToken GetTokenFromSymbol(char symbol, JsonToken token)
-        {
-            switch (symbol)
+            if (item == null)
             {
-                case '{':
-                    token = JsonToken.LeftBrace;
-                    break;
-                case '}':
-                    token = JsonToken.RightBrace;
-                    break;
-                case ':':
-                    token = JsonToken.Colon;
-                    break;
-                case ',':
-                    token = JsonToken.Comma;
-                    break;
-                case '[':
-                    token = JsonToken.LeftBracket;
-                    break;
-                case ']':
-                    token = JsonToken.RightBracket;
-                    break;
-                case '"':
-                    token = JsonToken.String;
-                    break;
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                case '.':
-                case 'e':
-                case 'E':
-                case '+':
-                case '-':
-                    token = JsonToken.Number;
-                    break;
-            }
-            return token;
-        }
-
-        internal static void      IgnoreWhitespace(IList<char> data, ref int index, char symbol)
-        {
-            var token = JsonToken.Unknown;
-            IgnoreWhitespace(data, ref index, ref token, symbol);
-            return;
-        }
-        internal static JsonToken IgnoreWhitespace(IList<char> data, ref int index, ref JsonToken token, char symbol)
-        {
-            switch (symbol)
-            {
-                case ' ':
-                case '\\':
-                case '/':
-                case '\b':
-                case '\f':
-                case '\n':
-                case '\r':
-                case '\t':
-                    index++;
-                    token = NextToken(data, ref index);
-                    break;
-            }
-            return token;
-        }
-
-        internal static void   GetKeyword(string word, JsonToken target, IList<char> data,ref int index, ref JsonToken result)
-        {
-            int buffer = data.Count - index;
-            if (buffer < word.Length)
-            {
+                sb.Append("null");
                 return;
             }
 
-            for (var i = 0; i < word.Length; i++)
+            if (item is IDictionary)
             {
-                if (data[index + i] != word[i])
-                {
-                    return;
-                }
+                SerializeObject(item, sb, false, complexity);
+                return;
             }
 
-            result = target;
-            index += word.Length;
-        }     
+            if (item is ICollection && !(item is string))
+            {
+                SerializeArray(item, sb, complexity);
+                return;
+            }
+
+            if (item is Usid)
+            {
+                sb.Append("\"" + ((Usid)item).ToString() + "\"");
+                return;
+            }
+
+            if (item is Ussn)
+            {
+                sb.Append("\"" + ((Ussn)item).ToString() + "\"");
+                return;
+            }
+
+            if (item is DateTime)
+            {
+                sb.Append("\"" + ((DateTime)item).ToString("yyyy-MM-dd HH:mm:dd") + "\"");
+                return;
+            }
+
+            if (item is Enum)
+            {
+                sb.Append("\"" + item.ToString() + "\"");
+                return;
+            }
+
+            if (item is Type)
+            {
+                sb.Append("\"" + ((Type)item).FullName + "\"");
+                return;
+            }
+
+            if (item is bool)
+            {
+                sb.Append(((bool)item).ToString().ToLower());
+                return;
+            }
+
+            if (item is ValueType)
+            {
+                sb.Append(item.ToString().Replace(',', '.'));
+                return;
+            }
+
+            IDictionary<string, object>
+                bag = GetBagForObject(item.GetType(), item, complexity);
+
+            SerializeItem(sb, bag, key, complexity);
+        }
+
+        /// <summary>
+        /// The SerializeObject.
+        /// </summary>
+        /// <param name="item">The item<see cref="object"/>.</param>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="intAsKey">The intAsKey<see cref="bool"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        internal static void SerializeObject(object item, StringBuilder sb, bool intAsKey = false, DealComplexity complexity = DealComplexity.Standard)
+        {
+            sb.Append("{");
+
+            IDictionary nested = (IDictionary)item;
+            int i = 0;
+            int count = nested.Count;
+            foreach (DictionaryEntry entry in nested)
+            {
+                sb.Append("\"" + entry.Key + "\"");
+                sb.Append(":");
+
+                object value = entry.Value;
+                if (value is string)
+                {
+                    SerializeString(sb, value);
+                }
+                else
+                {
+                    SerializeItem(sb, entry.Value, entry.Key.ToString(), complexity);
+                }
+                if (i < count - 1)
+                {
+                    sb.Append(",");
+                }
+                i++;
+            }
+
+            sb.Append("}");
+        }
+
+        /// <summary>
+        /// The SerializeString.
+        /// </summary>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="item">The item<see cref="object"/>.</param>
+        internal static void SerializeString(StringBuilder sb, object item)
+        {
+            char[] symbols = ((string)item).ToCharArray();
+            SerializeUnicode(sb, symbols);
+        }
+
+        /// <summary>
+        /// The SerializeUnicode.
+        /// </summary>
+        /// <param name="sb">The sb<see cref="StringBuilder"/>.</param>
+        /// <param name="symbols">The symbols<see cref="char[]"/>.</param>
+        internal static void SerializeUnicode(StringBuilder sb, char[] symbols)
+        {
+            sb.Append("\"");
+
+            string[] unicodes = symbols.Select(symbol => GetUnicode(symbol)).ToArray();
+
+            foreach (var unicode in unicodes)
+                sb.Append(unicode);
+
+            sb.Append("\"");
+        }
+
+        /// <summary>
+        /// The DeserializeImpl.
+        /// </summary>
+        /// <param name="map">The map<see cref="IEnumerable{PropertyInfo}"/>.</param>
+        /// <param name="bag">The bag<see cref="IDictionary{string, object}"/>.</param>
+        /// <param name="instance">The instance<see cref="object"/>.</param>
+        private static void DeserializeImpl(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, object instance)
+        {
+            DeserializeType(map, bag, instance);
+        }
+
+        /// <summary>
+        /// The DeserializeImpl.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="map">The map<see cref="IEnumerable{PropertyInfo}"/>.</param>
+        /// <param name="bag">The bag<see cref="IDictionary{string, object}"/>.</param>
+        /// <param name="instance">The instance<see cref="T"/>.</param>
+        private static void DeserializeImpl<T>(IEnumerable<PropertyInfo> map, IDictionary<string, object> bag, T instance)
+        {
+            DeserializeType(map, bag, instance);
+        }
+
+        #endregion
     }
 
+    /// <summary>
+    /// Defines the <see cref="JsonParserProperties" />.
+    /// </summary>
     public static class JsonParserProperties
     {
-      
+        #region Fields
+
         public static Dictionary<string, string[]> Deck = new Dictionary<string, string[]>()
         {
                {
@@ -1060,10 +1342,10 @@ namespace System.Deal
                 {
                     "Checked",   "Index",      "Page",     "PageIndex",
                     "ViewIndex", "NoId",       "Edited",   "Deleted",
-                    "Added",     "Synced",     "Saved", 
+                    "Added",     "Synced",     "Saved",
                     "Fields",    "ChildJoins", "ParentJoins"
                 }
-            },           
+            },
              {
                 "System.FigureAs.DataField",
                 new string[]
@@ -1077,12 +1359,12 @@ namespace System.Deal
                 {
                     "RubricId",     "Ordinal",           "Visible",
                     "RubricName",   "DisplayName",       "DataType",
-                    "Default",     "isKey",             "Editable", 
+                    "Default",     "isKey",             "Editable",
                     "Revalue",     "RevalOperand",      "RevalType",
                     "TotalOperand"
                 }
             },
-       
+
              {
                 "System.FigureAs.FilterTerm",
                 new string[]
@@ -1157,7 +1439,7 @@ namespace System.Deal
                     "RelationName",  "Parent",  "Child",
                 }
             },
-            { 
+            {
                 "System.FigureAs.RelationMember",
                 new string[]
                 {
@@ -1166,29 +1448,16 @@ namespace System.Deal
             }
         };
 
-        public static NumberFormatInfo JsonNumberInfo()
-        {
-            System.Globalization.NumberFormatInfo nfi = new System.Globalization.NumberFormatInfo();
-            nfi.NumberDecimalSeparator = ".";            
-            return nfi;
-        }
-      
-        public static PropertyInfo[] GetJsonProperties(this Type type, DealComplexity complexity = DealComplexity.Standard)
-        {
-            string name = type.FullName;
-            string cname = "";
-            if (complexity != DealComplexity.Standard)
-                cname = name + "_" + complexity.ToString();
-            else
-                cname = name;
+        #endregion
 
-            if (Deck.ContainsKey(cname))
-                return Deck[cname].Select(t => type.GetProperty(t)).ToArray();
-            else if (Deck.ContainsKey(name))
-                return Deck[name].Select(t => type.GetProperty(t)).ToArray();
-            else
-            return null;
-        }
+        #region Methods
+
+        /// <summary>
+        /// The GetJsonProperties.
+        /// </summary>
+        /// <typeparam name="T">.</typeparam>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="PropertyInfo[]"/>.</returns>
         public static PropertyInfo[] GetJsonProperties<T>(DealComplexity complexity = DealComplexity.Standard)
         {
             Type type = typeof(T);
@@ -1206,5 +1475,41 @@ namespace System.Deal
             else
                 return null;
         }
-    }    
+
+        /// <summary>
+        /// The GetJsonProperties.
+        /// </summary>
+        /// <param name="type">The type<see cref="Type"/>.</param>
+        /// <param name="complexity">The complexity<see cref="DealComplexity"/>.</param>
+        /// <returns>The <see cref="PropertyInfo[]"/>.</returns>
+        public static PropertyInfo[] GetJsonProperties(this Type type, DealComplexity complexity = DealComplexity.Standard)
+        {
+            string name = type.FullName;
+            string cname = "";
+            if (complexity != DealComplexity.Standard)
+                cname = name + "_" + complexity.ToString();
+            else
+                cname = name;
+
+            if (Deck.ContainsKey(cname))
+                return Deck[cname].Select(t => type.GetProperty(t)).ToArray();
+            else if (Deck.ContainsKey(name))
+                return Deck[name].Select(t => type.GetProperty(t)).ToArray();
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// The JsonNumberInfo.
+        /// </summary>
+        /// <returns>The <see cref="NumberFormatInfo"/>.</returns>
+        public static NumberFormatInfo JsonNumberInfo()
+        {
+            System.Globalization.NumberFormatInfo nfi = new System.Globalization.NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+            return nfi;
+        }
+
+        #endregion
+    }
 }

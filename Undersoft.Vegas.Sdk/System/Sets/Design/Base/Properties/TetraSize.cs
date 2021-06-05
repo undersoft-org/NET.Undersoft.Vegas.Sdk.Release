@@ -1,16 +1,19 @@
-﻿using System.Uniques;
-/*************************************************************************************
-    Copyright (c) 2020 Undersoft
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
 
-    System.Sets.Basedeck.TetraSize
-              
-    @author Darius Hanc                                                  
-    @project NETStandard.Undersoft.SDK                      
-    @version 0.7.1.r.d (Feb 7, 2020)                                            
-    @licence MIT                                       
- *********************************************************************************/
+   System.Sets.TetraSize.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
+
 namespace System.Sets.Basedeck
-{  
+{
+    using System.Uniques;
+
     public struct TetraSize
     {
         public TetraSize(int size = 8)
@@ -21,7 +24,7 @@ namespace System.Sets.Basedeck
             EvenNegativeSize = size;
             OddNegativeSize = size;
 
-            EvenPositivePrimesId=0;
+            EvenPositivePrimesId = 0;
             OddPositivePrimesId = 0;
             EvenNegativePrimesId = 0;
             OddNegativePrimesId = 0;
@@ -44,7 +47,7 @@ namespace System.Sets.Basedeck
         public unsafe int NextSize(uint id)
         {
             fixed (TetraSize* a = &this)
-                return (*&((int*)a)[id]) = PRIMES_ARRAY.Get((*&((int*)a)[id+4])++);
+                return (*&((int*)a)[id]) = PRIMES_ARRAY.Get((*&((int*)a)[id + 4])++);
         }
         public unsafe int PreviousSize(uint id)
         {
@@ -93,5 +96,4 @@ namespace System.Sets.Basedeck
 
         public int StartSize;
     }
-
 }

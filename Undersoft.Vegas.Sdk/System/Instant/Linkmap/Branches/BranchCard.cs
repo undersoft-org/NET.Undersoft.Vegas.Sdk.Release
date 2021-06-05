@@ -16,8 +16,8 @@ namespace System.Instant
     using System.Instant.Linking;
     using System.Linq;
     using System.Sets;
-    using System.Runtime.InteropServices;
     using System.Uniques;
+
 
     public class BranchCard : BaseCard<ICard<IFigure>>, IFigure, IEquatable<ICard<IFigure>>, IComparable<ICard<IFigure>>
     {
@@ -75,7 +75,7 @@ namespace System.Instant
         {
             return Key.Equals(y.UniqueKey());
         }
-        public          bool Equals(ICard<IFigure> other)
+        public bool Equals(ICard<IFigure> other)
         {
             return Key == other.UniqueKey;
         }
@@ -97,7 +97,7 @@ namespace System.Instant
         {
             return (int)(Key - other.Key);
         }
-        public          int CompareTo(ICard<IFigure> other)
+        public int CompareTo(ICard<IFigure> other)
         {
             return (int)(Key - other.UniqueKey);
         }
@@ -112,7 +112,7 @@ namespace System.Instant
             return value.GetUniqueBytes();
         }
 
-        public override    int[] UniqueOrdinals()
+        public override int[] UniqueOrdinals()
         {
             return Member.KeyRubrics.Ordinals;
         }
@@ -120,7 +120,7 @@ namespace System.Instant
         {
             return Member.KeyRubrics.Ordinals.Select(x => value.Value[x]).ToArray();
         }
-        public override     ulong UniquesAsKey()
+        public override ulong UniquesAsKey()
         {
             IRubrics r = Member.KeyRubrics;
             IFigure f = value.Value;

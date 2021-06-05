@@ -1,10 +1,20 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Deal.DealEnums.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Deal
 {
+    using System;
+
+    #region Enums
 
     [Serializable]
     public enum DirectionType
@@ -13,15 +23,13 @@ namespace System.Deal
         Receive,
         None
     }
-
     [Serializable]
     public enum DealProtocol
     {
         NONE,
         DOTP,
-        HTTP      
+        HTTP
     }
-
     [Serializable]
     public enum ProtocolMethod
     {
@@ -35,7 +43,6 @@ namespace System.Deal
         DELETE,
         PATCH
     }
-
     [Serializable]
     public enum DealComplexity
     {
@@ -44,7 +51,6 @@ namespace System.Deal
         Standard,
         Advanced
     }
-
     [Serializable]
     public enum MessagePart
     {
@@ -52,6 +58,5 @@ namespace System.Deal
         Message,
     }
 
-   
-
+    #endregion
 }

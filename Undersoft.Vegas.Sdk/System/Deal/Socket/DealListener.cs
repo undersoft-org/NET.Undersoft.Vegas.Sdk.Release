@@ -20,6 +20,9 @@ namespace System.Deal
     using System.Sets;
     using System.Threading;
 
+    /// <summary>
+    /// Defines the <see cref="DealListener" />.
+    /// </summary>
     public sealed class DealListener : IDealListener
     {
         #region Fields
@@ -38,6 +41,9 @@ namespace System.Deal
 
         #region Constructors
 
+        /// <summary>
+        /// Prevents a default instance of the <see cref="DealListener"/> class from being created.
+        /// </summary>
         private DealListener()
         {
         }
@@ -46,18 +52,33 @@ namespace System.Deal
 
         #region Properties
 
+        /// <summary>
+        /// Gets the Instance.
+        /// </summary>
         public static IDealListener Instance { get; } = new DealListener();
 
+        /// <summary>
+        /// Gets or sets the Security.
+        /// </summary>
         public static IMemberSecurity Security
         {
             get { return security; }
             set { security = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the HeaderReceived.
+        /// </summary>
         public IDeputy HeaderReceived { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HeaderSent.
+        /// </summary>
         public IDeputy HeaderSent { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Identity.
+        /// </summary>
         public MemberIdentity Identity
         {
             get
@@ -85,16 +106,28 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// Gets or sets the MessageReceived.
+        /// </summary>
         public IDeputy MessageReceived { get; set; }
 
+        /// <summary>
+        /// Gets or sets the MessageSent.
+        /// </summary>
         public IDeputy MessageSent { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SendEcho.
+        /// </summary>
         public IDeputy SendEcho { get; set; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// The ClearClients.
+        /// </summary>
         public void ClearClients()
         {
             foreach (ITransferContext closeContext in clients.AsValues())
@@ -124,11 +157,18 @@ namespace System.Deal
             clients.Clear();
         }
 
+        /// <summary>
+        /// The ClearResources.
+        /// </summary>
         public void ClearResources()
         {
             resources.Clear();
         }
 
+        /// <summary>
+        /// The CloseClient.
+        /// </summary>
+        /// <param name="card">The card<see cref="ICard{ITransferContext}"/>.</param>
         public void CloseClient(ICard<ITransferContext> card)
         {
             ITransferContext context = card.Value;
@@ -160,11 +200,18 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The CloseClient.
+        /// </summary>
+        /// <param name="id">The id<see cref="int"/>.</param>
         public void CloseClient(int id)
         {
             CloseClient(GetClient(id));
         }
 
+        /// <summary>
+        /// The CloseListener.
+        /// </summary>
         public void CloseListener()
         {
             foreach (ITransferContext closeContext in clients.AsValues())
@@ -202,6 +249,10 @@ namespace System.Deal
             GC.Collect();
         }
 
+        /// <summary>
+        /// The DealHeaderReceived.
+        /// </summary>
+        /// <param name="context">The context<see cref="ITransferContext"/>.</param>
         public void DealHeaderReceived(ITransferContext context)
         {
             if (context.BlockSize > 0)
@@ -228,6 +279,9 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The Dispose.
+        /// </summary>
         public void Dispose()
         {
             foreach (var card in clients.AsCards())
@@ -238,12 +292,20 @@ namespace System.Deal
             connectingNotice.Dispose();
         }
 
+        /// <summary>
+        /// The Echo.
+        /// </summary>
+        /// <param name="message">The message<see cref="string"/>.</param>
         public void Echo(string message)
         {
             if (SendEcho != null)
                 SendEcho.Execute(message);
         }
 
+        /// <summary>
+        /// The HeaderReceivedCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         public void HeaderReceivedCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
@@ -258,6 +320,10 @@ namespace System.Deal
                 HttpHeaderReceived(context);
         }
 
+        /// <summary>
+        /// The HeaderSentCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         public void HeaderSentCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
@@ -288,6 +354,10 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The HttpHeaderReceived.
+        /// </summary>
+        /// <param name="context">The context<see cref="ITransferContext"/>.</param>
         public void HttpHeaderReceived(ITransferContext context)
         {
             if (context.BlockSize > 0)
@@ -313,6 +383,11 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The IsConnected.
+        /// </summary>
+        /// <param name="id">The id<see cref="int"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool IsConnected(int id)
         {
             ITransferContext context = GetClient(id).Value;
@@ -322,6 +397,10 @@ namespace System.Deal
                 return false;
         }
 
+        /// <summary>
+        /// The MessageReceivedCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         public void MessageReceivedCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
@@ -368,6 +447,10 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The MessageSentCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         public void MessageSentCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
@@ -405,6 +488,10 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The OnConnectCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         public void OnConnectCallback(IAsyncResult result)
         {
             try
@@ -438,6 +525,11 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The Receive.
+        /// </summary>
+        /// <param name="messagePart">The messagePart<see cref="MessagePart"/>.</param>
+        /// <param name="id">The id<see cref="int"/>.</param>
         public void Receive(MessagePart messagePart, int id)
         {
             ITransferContext context = GetClient(id).Value;
@@ -454,6 +546,11 @@ namespace System.Deal
                 context.Listener.BeginReceive(context.HeaderBuffer, 0, context.BufferSize, SocketFlags.None, callback, context);
         }
 
+        /// <summary>
+        /// The Send.
+        /// </summary>
+        /// <param name="messagePart">The messagePart<see cref="MessagePart"/>.</param>
+        /// <param name="id">The id<see cref="int"/>.</param>
         public void Send(MessagePart messagePart, int id)
         {
             ITransferContext context = GetClient(id).Value;
@@ -481,6 +578,9 @@ namespace System.Deal
             context.Listener.BeginSend(context.SerialBlock, 0, context.SerialBlock.Length, SocketFlags.None, callback, context);
         }
 
+        /// <summary>
+        /// The StartListening.
+        /// </summary>
         public void StartListening()
         {
             ushort port = Convert.ToUInt16(Identity.Port),
@@ -509,6 +609,11 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The GetClient.
+        /// </summary>
+        /// <param name="id">The id<see cref="int"/>.</param>
+        /// <returns>The <see cref="ICard{ITransferContext}"/>.</returns>
         private ICard<ITransferContext> GetClient(int id)
         {
             return clients.GetCard(id);

@@ -1,21 +1,33 @@
-﻿using System.Runtime.InteropServices;
-using System.Extract;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.Ursn.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Uniques
 {
+    using System.Extract;
+    using System.Runtime.InteropServices;
+
     [Serializable]
     [ComVisible(true)]
-    [StructLayout(LayoutKind.Sequential, Size = 24)]    
-    public unsafe struct Ursn : IFormattable, IComparable 
-        , IComparable<Ursn>, IEquatable<Ursn>, IUnique       
+    [StructLayout(LayoutKind.Sequential, Size = 24)]
+    public unsafe struct Ursn : IFormattable, IComparable
+        , IComparable<Ursn>, IEquatable<Ursn>, IUnique
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]  
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
         private byte[] bytes;
 
         public ulong UniqueKey
         {
             get
-            {                                   
+            {
                 if (IsNull) return 0;
                 fixed (byte* pbyte = bytes)
                     return *((ulong*)pbyte);
@@ -26,7 +38,7 @@ namespace System.Uniques
                 fixed (byte* b = SureBytes)
                     *((ulong*)b) = value;
             }
-        }       
+        }
 
         public ulong KeyBlockX
         {
@@ -67,7 +79,7 @@ namespace System.Uniques
             }
         }
         public Ursn(string s)
-        {          
+        {
             bytes = new byte[24];
             this.FromHexTetraChars(s.ToCharArray());    //RR
         }
@@ -81,9 +93,9 @@ namespace System.Uniques
                     l = 24;
                 b.CopyBlock(bytes, (uint)l);
             }
-          
+
         }
-         
+
         public Ursn(ulong x, ulong y, ulong z)
         {
             bytes = new byte[24];
@@ -100,12 +112,12 @@ namespace System.Uniques
             bytes = new byte[24];
             fixed (byte* n = bytes)
             {
-                fixed (byte* s = x)                
+                fixed (byte* s = x)
                     *((ulong*)n) = *((ulong*)s);
                 fixed (byte* s = y)
                     *((ulong*)(n + 8)) = *((ulong*)s);
                 fixed (byte* s = z)
-                    *((ulong*)(n + 16)) = *((ulong*)s);       
+                    *((ulong*)(n + 16)) = *((ulong*)s);
             }
         }
         public Ursn(object x, object[] y, object[] z)
@@ -114,12 +126,12 @@ namespace System.Uniques
 
             fixed (byte* n = bytes)
             {
-                fixed(byte* s = x.UniqueBytes64())
+                fixed (byte* s = x.UniqueBytes64())
                     *((ulong*)n) = *((ulong*)s);
                 fixed (byte* s = y.UniqueBytes64())
                     *((ulong*)(n + 12)) = *((ulong*)s);
                 fixed (byte* s = z.UniqueBytes64())
-                    *((ulong*)(n + 16)) = *((ulong*)s);             
+                    *((ulong*)(n + 16)) = *((ulong*)s);
             }
         }
 
@@ -254,7 +266,7 @@ namespace System.Uniques
 
         public override int GetHashCode()
         {
-            fixed (byte* pbyte = &this[0,8].BitAggregate64to32()[0])
+            fixed (byte* pbyte = &this[0, 8].BitAggregate64to32()[0])
                 return *((int*)pbyte);
         }
 
@@ -316,7 +328,7 @@ namespace System.Uniques
         {
             if (bytes == null)
                 bytes = new byte[24];
-            return new string(this.ToHexTetraChars());  
+            return new string(this.ToHexTetraChars());
         }
 
         public String ToString(String format)
@@ -349,13 +361,13 @@ namespace System.Uniques
         {
             return s.ToString();
         }
-      
+
 
         public static explicit operator Ursn(byte[] l)
         {
             return new Ursn(l);
         }
-        public static implicit operator byte[](Ursn s)
+        public static implicit operator byte[] (Ursn s)
         {
             return s.GetBytes();
         }
@@ -363,7 +375,7 @@ namespace System.Uniques
         public static Ursn Empty
         {
             get { return new Ursn(new byte[24]); }
-        }      
+        }
 
         IUnique IUnique.Empty
         {
@@ -378,7 +390,7 @@ namespace System.Uniques
         public char[] ToHexTetraChars()
         {
             char[] pchchar = new char[32];
-            ulong pchblock;  
+            ulong pchblock;
             int pchlength = 32;
             byte pchbyte;
             int idx = 0;
@@ -392,18 +404,18 @@ namespace System.Uniques
                 pchblock = pchblock & 0x0000ffffffffffffL;  //each block has 6 bytes
                 for (int i = 0; i < 8; i++)
                 {
-                    pchbyte = (byte)(pchblock & 0x3fL);                    
+                    pchbyte = (byte)(pchblock & 0x3fL);
                     pchchar[idx] = (pchbyte).ToHexTetraChar();
-                    idx++;                    
+                    idx++;
                     pchblock = pchblock >> 6;
                     if (pchbyte != 0x00) pchlength = idx;
                 }
             }
-                        
+
             char[] pchchartrim = new char[pchlength];
             Array.Copy(pchchar, 0, pchchartrim, 0, pchlength);
 
-            return pchchartrim;            
+            return pchchartrim;
         }
 
         public void FromHexTetraChars(char[] pchchar)
@@ -420,7 +432,7 @@ namespace System.Uniques
             {
                 pchblock = 0x00L;
                 blocklength = Math.Min(8, Math.Max(0, pchlength - 8 * j));        //required if trimmed zeros, length < 32
-                idx = Math.Min(pchlength, 8*(j+1)) - 1;                           //required if trimmed zeros, length <32
+                idx = Math.Min(pchlength, 8 * (j + 1)) - 1;                           //required if trimmed zeros, length <32
 
                 for (int i = 0; i < blocklength; i++)     //8 chars per block, each 6 bits
                 {
@@ -442,7 +454,7 @@ namespace System.Uniques
                     *((ulong*)&pbyte[j * 6]) = pchblock;
 
                 }
-            }                                    
+            }
         }
 
         public bool EqualsContent(Ursn g)
@@ -457,7 +469,7 @@ namespace System.Uniques
                         return false;
                 }
             }
-            return true;           
+            return true;
         }
 
         public void SetUniqueSeed(ulong seed)

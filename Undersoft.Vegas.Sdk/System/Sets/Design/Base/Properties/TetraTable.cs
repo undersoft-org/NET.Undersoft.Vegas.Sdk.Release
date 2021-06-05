@@ -3,14 +3,15 @@
 
     System.Sets.Basedeck.TetraTable
               
-    @author Darius Hanc                                                  
-    @project NETStandard.Undersoft.SDK                      
+    @author Dariusz Hanc                                                  
+    @project Undersoft.Vegas.Sdk                      
     @version 0.7.1.r.d (Feb 7, 2020)                                            
     @licence MIT                                       
  *********************************************************************************/
+
 namespace System.Sets.Basedeck
 {
-    public struct TetraTable<V>: IDisposable
+    public struct TetraTable<V> : IDisposable
     {
         public TetraTable(TetraSet<V> hashdeck, int size = 8)
         {
@@ -18,7 +19,7 @@ namespace System.Sets.Basedeck
             OddPositiveSize = hashdeck.EmptyCardTable(size);
             EvenNegativeSize = hashdeck.EmptyCardTable(size);
             OddNegativeSize = hashdeck.EmptyCardTable(size);
-            tetraTable = new ICard<V>[4][] { EvenPositiveSize, OddPositiveSize, EvenNegativeSize, OddNegativeSize};
+            tetraTable = new ICard<V>[4][] { EvenPositiveSize, OddPositiveSize, EvenNegativeSize, OddNegativeSize };
 
         }
 
@@ -26,7 +27,7 @@ namespace System.Sets.Basedeck
         {
             get
             {
-                return tetraTable[id];                
+                return tetraTable[id];
             }
             set
             {
@@ -82,7 +83,7 @@ namespace System.Sets.Basedeck
         {
             return (int)(key % (ulong)size);
         }
-       
+
         private ICard<V>[] EvenPositiveSize;
         private ICard<V>[] OddPositiveSize;
         private ICard<V>[] EvenNegativeSize;

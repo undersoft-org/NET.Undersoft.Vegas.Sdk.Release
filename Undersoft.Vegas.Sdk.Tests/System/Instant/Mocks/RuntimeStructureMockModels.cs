@@ -1,120 +1,182 @@
-using System.Uniques;
-using System.Instant.Treatments;
-using System.Runtime.InteropServices;
+/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Tests.RuntimeStructureMockModels.cs.Tests
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Tests
 {
+    using System.Instant.Treatments;
+    using System.Runtime.InteropServices;
+    using System.Uniques;
 
+    /// <summary>
+    /// Defines the <see cref="FieldsAndProperties" />.
+    /// </summary>
+    public class FieldsAndProperties : FieldsAndPropertiesModel
+    {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        public new int Id { get; set; }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Defines the <see cref="FieldsAndPropertiesModel" />.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public class FieldsAndPropertiesModel
+    {
+        #region Fields
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string Alias = "ProperSize";
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public byte[] ByteArray = new byte[10];
+        public double Factor = 2 * (long)int.MaxValue;
+        public Guid GlobalId = new Guid();
+        [FigureDisplay("ProductName")]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string Name = "SizeIsTwoTimesLonger";
+        [FigureDisplay("AvgPrice")]
+        [FigureTreatment(AggregateOperand = AggregateOperand.Avg, SummaryOperand = AggregateOperand.Sum)]
+        public double Price = 12.3;
+        public bool Status;
+        public Usid SystemKey = Usid.Empty;
+        [FigureKey]
+        public DateTime Time = DateTime.Now;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
+        public string token = "AFH54345";
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        [FigureKey]
+        public int Id { get; set; } = 404;
+
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        public long Key { get; set; } = long.MaxValue;
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Defines the <see cref="FieldsOnlyModel" />.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public class FieldsOnlyModel
     {
-        [FigureKey]
-        public int Id = 404;
+        #region Fields
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Alias = "ProperSize";
-
+        [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public byte[] ByteArray = new byte[10];
+        public double Factor = 2 * (long)int.MaxValue;
+        public Guid GlobalId = new Guid();
+        [FigureKey]
+        public int Id = 404;
+        public long Key = long.MaxValue;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Name = "SizeIsTwoTimesLonger";
-
-        public long Key = long.MaxValue;
-
         [FigureDisplay("AvgPrice")]
         [FigureTreatment(AggregateOperand = AggregateOperand.Avg, SummaryOperand = AggregateOperand.Sum)]
         public double Price;
-
-        [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public byte[] ByteArray = new byte[10];
-
-        public Ussn SystemKey = Ussn.Empty;
-
         public bool Status;
-
+        public Ussn SystemKey = Ussn.Empty;
         public DateTime Time = DateTime.Now;
 
-        public Guid GlobalId = new Guid();
-
-        public double Factor = 2 * (long)int.MaxValue;
+        #endregion
     }
 
+    /// <summary>
+    /// Defines the <see cref="PropertiesOnlyModel" />.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public class PropertiesOnlyModel
     {
-        [FigureKey(IsAutoincrement = true, Order = 0)]
-        public int Id { get; set; } = 405;
+        #region Properties
 
+        /// <summary>
+        /// Gets or sets the Alias.
+        /// </summary>
         [FigureAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Alias { get; set; } = "ProperSize";
 
+        /// <summary>
+        /// Gets or sets the ByteArray.
+        /// </summary>
+        [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public byte[] ByteArray { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Factor.
+        /// </summary>
+        public double Factor { get; set; } = 2 * (long)int.MaxValue;
+
+        /// <summary>
+        /// Gets or sets the GlobalId.
+        /// </summary>
+        public Guid GlobalId { get; set; } = new Guid();
+
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        [FigureKey(IsAutoincrement = true, Order = 0)]
+        public int Id { get; set; } = 405;
+
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        [FigureKey]
+        public long Key { get; set; } = long.MaxValue;
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
         [FigureKey(Order = 1)]
         [FigureDisplay("ProductName")]
         [FigureAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Name { get; set; } = "SizeIsTwoTimesLonger";
 
-        [FigureKey]
-        public long Key { get; set; } = long.MaxValue;
-
-        [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public byte[] ByteArray { get; set; }
-
+        /// <summary>
+        /// Gets or sets the Price.
+        /// </summary>
         [FigureDisplay("AvgPrice")]
-        [FigureTreatment( AggregateOperand = AggregateOperand.Avg, SummaryOperand = AggregateOperand.Avg )]
+        [FigureTreatment(AggregateOperand = AggregateOperand.Avg, SummaryOperand = AggregateOperand.Avg)]
         public double Price { get; set; }
 
-        public Usid SystemKey { get; set; } = Usid.Empty;
-
+        /// <summary>
+        /// Gets or sets a value indicating whether Status.
+        /// </summary>
         public bool Status { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SystemKey.
+        /// </summary>
+        public Usid SystemKey { get; set; } = Usid.Empty;
+
+        /// <summary>
+        /// Gets or sets the Time.
+        /// </summary>
         public DateTime Time { get; set; } = DateTime.Now;
 
-        public Guid GlobalId { get; set;} = new Guid();
-
-        public double Factor { get; set; } = 2 * (long)int.MaxValue;
+        #endregion
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public class FieldsAndPropertiesModel
-    {
-        [FigureKey]
-        public int Id { get; set; } = 404;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
-        public string token = "AFH54345";
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string Alias = "ProperSize";
-
-        [FigureDisplay("ProductName")]
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string Name = "SizeIsTwoTimesLonger";
-
-        public long Key { get; set; } = long.MaxValue;
-
-        [FigureDisplay("AvgPrice")]
-        [FigureTreatment(AggregateOperand = AggregateOperand.Avg, SummaryOperand = AggregateOperand.Sum)]
-        public double Price = 12.3;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public byte[] ByteArray  = new byte[10];
-
-        public Usid SystemKey = Usid.Empty;
-
-        public bool Status;
-
-        [FigureKey]
-        public DateTime Time = DateTime.Now;
-
-        public Guid GlobalId = new Guid();
-
-        public double Factor = 2 * (long)int.MaxValue;
-    }
-
-    public class FieldsAndProperties : FieldsAndPropertiesModel
-    {
-        public new int Id { get; set; }
-
-    }
-
-
-
 }

@@ -1,20 +1,51 @@
-﻿using System.Extract;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.xxHash64.Async.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Uniques
 {
     using System.Buffers;
     using System.Diagnostics;
+    using System.Extract;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Defines the <see cref="xxHash64" />.
+    /// </summary>
     public static partial class xxHash64
     {
+        #region Methods
+
+        /// <summary>
+        /// The ComputeHashAsync.
+        /// </summary>
+        /// <param name="stream">The stream<see cref="Stream"/>.</param>
+        /// <param name="bufferSize">The bufferSize<see cref="int"/>.</param>
+        /// <param name="seed">The seed<see cref="ulong"/>.</param>
+        /// <returns>The <see cref="ValueTask{ulong}"/>.</returns>
         public static async ValueTask<ulong> ComputeHashAsync(Stream stream, int bufferSize = 8192, ulong seed = 0)
         {
             return await ComputeHashAsync(stream, bufferSize, seed, CancellationToken.None);
         }
-        
+
+        /// <summary>
+        /// The ComputeHashAsync.
+        /// </summary>
+        /// <param name="stream">The stream<see cref="Stream"/>.</param>
+        /// <param name="bufferSize">The bufferSize<see cref="int"/>.</param>
+        /// <param name="seed">The seed<see cref="ulong"/>.</param>
+        /// <param name="cancellationToken">The cancellationToken<see cref="CancellationToken"/>.</param>
+        /// <returns>The <see cref="ValueTask{ulong}"/>.</returns>
         public static async ValueTask<ulong> ComputeHashAsync(Stream stream, int bufferSize, ulong seed, CancellationToken cancellationToken)
         {
             Debug.Assert(stream != null);
@@ -34,20 +65,20 @@ namespace System.Uniques
             try
             {
                 while ((readBytes = await stream.ReadAsync(buffer, offset, bufferSize, cancellationToken).ConfigureAwait(false)) > 0)
-                {   
+                {
                     if (cancellationToken.IsCancellationRequested)
                     {
                         return await Task.FromCanceled<ulong>(cancellationToken);
                     }
-                    
+
                     length = length + readBytes;
                     offset = offset + readBytes;
 
                     if (offset < 32) continue;
 
-                    int r = offset % 32; 
-                    int l = offset - r;  
- 
+                    int r = offset % 32;
+                    int l = offset - r;
+
                     UnsafeAlign(buffer, l, ref v1, ref v2, ref v3, ref v4);
 
                     Extractor.CopyBlock(buffer, 0, buffer, l, r);
@@ -63,5 +94,7 @@ namespace System.Uniques
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
+
+        #endregion
     }
 }

@@ -1,32 +1,89 @@
-﻿using System.Instant;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Deal.DealOperation.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Deal
-{  
+{
+    #region Enums
 
+    public enum StateFlag : ushort
+    {
+        Synced = 1,
+        Edited = 2,
+        Added = 4,
+        Quered = 8,
+        Saved = 16,
+        Canceled = 32
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Defines the <see cref="DealOperation" />.
+    /// </summary>
     public class DealOperation : IDisposable
     {
-        [NonSerialized]
-        public  ITransferContext transferContext;
-        private DealContext dealContext;
-        private ServiceSite site;
-        private DirectionType direction;
-        private ISerialFormatter content;
-        private ushort state;        
+        #region Fields
 
+        [NonSerialized]
+        public ITransferContext transferContext;
+        private ISerialFormatter content;
+        private DealContext dealContext;
+        private DirectionType direction;
+        private ServiceSite site;
+        private ushort state;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DealOperation"/> class.
+        /// </summary>
+        /// <param name="dealContent">The dealContent<see cref="object"/>.</param>
         public DealOperation(object dealContent)
-        {                     
+        {
             site = ServiceSite.Server;
-            direction =  DirectionType.None;
+            direction = DirectionType.None;
             state = ((ISerialNumber)dealContent).FlagsBlock;
             content = (ISerialFormatter)dealContent;
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DealOperation"/> class.
+        /// </summary>
+        /// <param name="dealContent">The dealContent<see cref="object"/>.</param>
+        /// <param name="directionType">The directionType<see cref="DirectionType"/>.</param>
+        /// <param name="transfer">The transfer<see cref="DealTransfer"/>.</param>
         public DealOperation(object dealContent, DirectionType directionType, DealTransfer transfer) : this(dealContent)
         {
             direction = directionType;
             transferContext = transfer.Context;
-            dealContext = transfer.MyHeader.Context;         
+            dealContext = transfer.MyHeader.Context;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+        }
+
+        /// <summary>
+        /// The Resolve.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
         public void Resolve(out object[] messages)
         {
             messages = null;
@@ -36,7 +93,7 @@ namespace System.Deal
                     switch (direction)
                     {
                         case DirectionType.Receive:
-                           // messages = content.GetMessage();
+                            // messages = content.GetMessage();
                             break;
                         case DirectionType.Send:
                             switch (state & (int)StateFlag.Synced)
@@ -75,28 +132,72 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The CltSendSync.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
         private void CltSendSync(out object[] messages)
         {
-            if(direction != DirectionType.None)
+            if (direction != DirectionType.None)
                 if (((state & (int)StateFlag.Edited) > 0) ||
                     ((state & (int)StateFlag.Saved) > 0) ||
                     ((state & (int)StateFlag.Quered) > 0) ||
                     ((state & (int)StateFlag.Canceled) > 0))
                 {
-                transferContext.Synchronic = true;
-                dealContext.Synchronic = true;
-            }
+                    transferContext.Synchronic = true;
+                    dealContext.Synchronic = true;
+                }
 
             messages = content.GetMessage();
         }
 
+        /// <summary>
+        /// The SrvSendCancel.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
+        private void SrvSendCancel(out object[] messages)
+        {
+            messages = content.GetMessage();
+        }
+
+        /// <summary>
+        /// The SrvSendEdit.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
+        private void SrvSendEdit(out object[] messages)
+        {
+            messages = content.GetMessage();
+        }
+
+        /// <summary>
+        /// The SrvSendQuery.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
+        private void SrvSendQuery(out object[] messages)
+        {
+            messages = content.GetMessage();
+        }
+
+        /// <summary>
+        /// The SrvSendSave.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
+        private void SrvSendSave(out object[] messages)
+        {
+            messages = content.GetMessage();
+        }
+
+        /// <summary>
+        /// The SrvSendSync.
+        /// </summary>
+        /// <param name="messages">The messages<see cref="object[]"/>.</param>
         private void SrvSendSync(out object[] messages)
         {
             if (direction != DirectionType.None)
                 if (((state & (int)StateFlag.Edited) > 0) ||
                     ((state & (int)StateFlag.Saved) > 0) ||
                     ((state & (int)StateFlag.Quered) > 0) ||
-                    ((state & (int)StateFlag.Canceled) > 0))             
+                    ((state & (int)StateFlag.Canceled) > 0))
                 {
                     transferContext.Synchronic = true;
                     dealContext.Synchronic = true;
@@ -129,43 +230,10 @@ namespace System.Deal
             }
             if (messages == null)
             {
-               messages = content.GetMessage();              
+                messages = content.GetMessage();
             }
         }
 
-        private void SrvSendEdit(out object[] messages)
-        {
-            messages = content.GetMessage();
-            /// on edit event
-        }
-        private void SrvSendSave(out object[] messages)
-        {
-            messages = content.GetMessage();
-            /// on save event
-        }
-        private void SrvSendCancel(out object[] messages)
-        {
-            messages = content.GetMessage();
-            /// on cancel event
-        }
-        private void SrvSendQuery(out object[] messages)
-        {
-            messages = content.GetMessage();
-            /// on query event
-        }
-
-        public void Dispose()
-        {
-        }
-    }
-
-    public enum StateFlag : ushort
-    {
-        Synced = 1,
-        Edited = 2,
-        Added = 4,
-        Quered = 8,
-        Saved = 16,
-        Canceled = 32
+        #endregion
     }
 }

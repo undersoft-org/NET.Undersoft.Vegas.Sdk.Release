@@ -6,146 +6,149 @@
 
 namespace System.Instant.Treatments
 {
-//    public static class Aggregator
-//    {
-//        public static IFigures Aggregate(this IFigures figures, bool onlyView = false)
-//        {
-//            return Result(figures.View, onlyView);
-//        }
+    #region Enums
 
-//        private static IFigures Result(IFigures figures, bool onlyView)
-//        {
+    //    public static class Aggregator
+    //    {
+    //        public static IFigures Aggregate(this IFigures figures, bool onlyView = false)
+    //        {
+    //            return Result(figures.View, onlyView);
+    //        }
 
-//            MemberRubric[] aggregateRubrics = figures.Treatment.AggregativeRubrics.ToArray();
-//            if (aggregateRubrics.Length > 0)
-//            {
-//                HashSet<int> targetLinkIds = new HashSet<int>();
+    //        private static IFigures Result(IFigures figures, bool onlyView)
+    //        {
 
-//                aggregateRubrics.Where(j => j.AggregateIndex != null)
-//                                  .Select(j => targetLinkIds
-//                                    .Add(j.AggregateIndex[0])).ToArray();
+    //            MemberRubric[] aggregateRubrics = figures.Treatment.AggregativeRubrics.ToArray();
+    //            if (aggregateRubrics.Length > 0)
+    //            {
+    //                HashSet<int> targetLinkIds = new HashSet<int>();
 
-//                Link[] allOrView = figures.Linker.Links.Links.AsValues()
-//                                                            .Cast<FigureLink>()
-//                                                                .Where(d => d.Target.Figures.Query.Terms.Count > 0).ToArray();
-//                int[] ids = null;
-//                IDeck<BranchDeck> subresult;
+    //                aggregateRubrics.Where(j => j.AggregateIndex != null)
+    //                                  .Select(j => targetLinkIds
+    //                                    .Add(j.AggregateIndex[0])).ToArray();
 
-//                if (onlyView)
-//                {
-//                    ids = allOrView.Select(r => figures.Linker.Links.IndexOf(r)).Where(id => targetLinkIds.Contains(id)).ToArray();
-//                    //subresult = figures.Linker.CreateLinks(allOrView);
-//                }
-//                else
-//                {
-//                    ids = targetLinkIds.ToArray();
-//                    //subresult = figures.Linker.GetMaps(figures.Linker.Links.AsValues().ToArray());
-//                }
+    //                Link[] allOrView = figures.Linker.Links.Links.AsValues()
+    //                                                            .Cast<FigureLink>()
+    //                                                                .Where(d => d.Target.Figures.Query.Terms.Count > 0).ToArray();
+    //                int[] ids = null;
+    //                IDeck<BranchDeck> subresult;
 
-//                if (subresult.Count > 0)
-//                {
-//                    NodeCard[] targetBranches = subresult.Select((j, y) => j != null && ids.Contains(y) ? j : null).Cast<LinkNode>().ToArray();
-//                    try
-//                    {
-//                        targetBranches.Select((o, y) =>
-//                        aggregateRubrics.Where(s =>
-//                                (s.AggregateIndex != null) &&
-//                                (s.AggregateRubric != null &&
-//                                s.AggregateIndex[0] == y) &&
-//                                o.Targets.Count > 0).Select(s =>
-//                                 o.Origins.First.Value[s.FieldId] =
+    //                if (onlyView)
+    //                {
+    //                    ids = allOrView.Select(r => figures.Linker.Links.IndexOf(r)).Where(id => targetLinkIds.Contains(id)).ToArray();
+    //                    //subresult = figures.Linker.CreateLinks(allOrView);
+    //                }
+    //                else
+    //                {
+    //                    ids = targetLinkIds.ToArray();
+    //                    //subresult = figures.Linker.GetMaps(figures.Linker.Links.AsValues().ToArray());
+    //                }
 
-//                                 (s.AggregateOperand == AggregateOperand.Default &&
-//                                    o.Origins.First.Value[s.FieldId] == s.RubricType.Default()) ?
-//                                  o.Targets
-//                                    .Select(f => f[s.AggregateOrdinal[0]])
+    //                if (subresult.Count > 0)
+    //                {
+    //                    NodeCard[] targetBranches = subresult.Select((j, y) => j != null && ids.Contains(y) ? j : null).Cast<LinkNode>().ToArray();
+    //                    try
+    //                    {
+    //                        targetBranches.Select((o, y) =>
+    //                        aggregateRubrics.Where(s =>
+    //                                (s.AggregateIndex != null) &&
+    //                                (s.AggregateRubric != null &&
+    //                                s.AggregateIndex[0] == y) &&
+    //                                o.Targets.Count > 0).Select(s =>
+    //                                 o.Origins.First.Value[s.FieldId] =
 
-//                                        .First() :
+    //                                 (s.AggregateOperand == AggregateOperand.Default &&
+    //                                    o.Origins.First.Value[s.FieldId] == s.RubricType.Default()) ?
+    //                                  o.Targets
+    //                                    .Select(f => f[s.AggregateOrdinal[0]])
 
-//                                 (s.AggregateOperand == AggregateOperand.Bind ||
-//                                  s.AggregateOperand == AggregateOperand.First) ?
-//                                  o.Targets
-//                                    .Select(f => f[s.AggregateOrdinal[0]])
+    //                                        .First() :
 
-//                                        .First() :
+    //                                 (s.AggregateOperand == AggregateOperand.Bind ||
+    //                                  s.AggregateOperand == AggregateOperand.First) ?
+    //                                  o.Targets
+    //                                    .Select(f => f[s.AggregateOrdinal[0]])
 
-//                                 (s.AggregateOperand == AggregateOperand.Last) ?
-//                                  o.Targets
-//                                    .Select(f => f[s.AggregateOrdinal[0]])
+    //                                        .First() :
 
-//                                        .Last() :
+    //                                 (s.AggregateOperand == AggregateOperand.Last) ?
+    //                                  o.Targets
+    //                                    .Select(f => f[s.AggregateOrdinal[0]])
 
-//                                 (s.AggregateOperand == AggregateOperand.Sum) ?
-//                                  o.Targets
+    //                                        .Last() :
 
-//                                        .Sum(f => f[s.AggregateOrdinal[0]] is DateTime ?
+    //                                 (s.AggregateOperand == AggregateOperand.Sum) ?
+    //                                  o.Targets
 
-//                                 ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
-//                                        Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
+    //                                        .Sum(f => f[s.AggregateOrdinal[0]] is DateTime ?
 
-//                                 (s.AggregateOperand == AggregateOperand.Min) ?
-//                                 o.Targets
+    //                                 ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
+    //                                        Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
 
-//                                        .Min(f => f[s.AggregateOrdinal[0]] is DateTime ?
+    //                                 (s.AggregateOperand == AggregateOperand.Min) ?
+    //                                 o.Targets
 
-//                                 ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
-//                                        Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
+    //                                        .Min(f => f[s.AggregateOrdinal[0]] is DateTime ?
 
-//                                 (s.AggregateOperand == AggregateOperand.Max) ?
-//                                 o.Targets
+    //                                 ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
+    //                                        Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
 
-//                                        .Max(f => f[s.AggregateOrdinal[0]] is DateTime ?
+    //                                 (s.AggregateOperand == AggregateOperand.Max) ?
+    //                                 o.Targets
 
-//                                    ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
-//                                       Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
+    //                                        .Max(f => f[s.AggregateOrdinal[0]] is DateTime ?
 
-//                                     (s.AggregateOperand == AggregateOperand.Count) ?
-//                                 o.Targets
+    //                                    ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
+    //                                       Convert.ToDouble(f[s.AggregateOrdinal[0]])) :
 
-//                                        .Count() :
+    //                                     (s.AggregateOperand == AggregateOperand.Count) ?
+    //                                 o.Targets
 
-//                                    (s.AggregateOperand == AggregateOperand.Avg) ?
-//                                       Convert.ChangeType(
-//                                 o.Targets
+    //                                        .Count() :
 
-//                                        .Average(f =>
+    //                                    (s.AggregateOperand == AggregateOperand.Avg) ?
+    //                                       Convert.ChangeType(
+    //                                 o.Targets
 
-//                                 f[s.AggregateOrdinal[0]] is DateTime ?
-//                                        ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
-//                                            Convert.ToDouble(f[s.AggregateOrdinal[0]])), typeof(string)) :
+    //                                        .Average(f =>
 
-//                                    (s.AggregateOperand == AggregateOperand.Bis) ?
-//                                  o.Targets
-//                                        .Select(f => (f[s.AggregateOrdinal[0]] != DBNull.Value) ?
-//                                                f[s.AggregateOrdinal[0]].ToString() : "")
+    //                                 f[s.AggregateOrdinal[0]] is DateTime ?
+    //                                        ((DateTime)f[s.AggregateOrdinal[0]]).ToOADate() :
+    //                                            Convert.ToDouble(f[s.AggregateOrdinal[0]])), typeof(string)) :
 
-//                                        .Aggregate((x, u) => x + " " + u) : ""
+    //                                    (s.AggregateOperand == AggregateOperand.Bis) ?
+    //                                  o.Targets
+    //                                        .Select(f => (f[s.AggregateOrdinal[0]] != DBNull.Value) ?
+    //                                                f[s.AggregateOrdinal[0]].ToString() : "")
 
-//                                  ).ToArray()).ToArray();
-//                    }
-//                    catch (Exception ex)
-//                    {
-//                    }
-//                    return figures;
-//                }
-//            }
-//            return figures;
-//        }
-//    }
+    //                                        .Aggregate((x, u) => x + " " + u) : ""
 
-[Serializable]
-public enum AggregateOperand
-{
-    None,
-    Sum,
-    Avg,
-    Min,
-    Max,
-    Bis,
-    First,
-    Last,
-    Bind,
-    Count,
-    Default
-}
+    //                                  ).ToArray()).ToArray();
+    //                    }
+    //                    catch (Exception ex)
+    //                    {
+    //                    }
+    //                    return figures;
+    //                }
+    //            }
+    //            return figures;
+    //        }
+    //    }
+    [Serializable]
+    public enum AggregateOperand
+    {
+        None,
+        Sum,
+        Avg,
+        Min,
+        Max,
+        Bis,
+        First,
+        Last,
+        Bind,
+        Count,
+        Default
+    }
+
+    #endregion
 }

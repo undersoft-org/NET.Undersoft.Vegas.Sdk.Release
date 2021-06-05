@@ -16,6 +16,7 @@ namespace System.Labors
     using System.Uniques;
 
 
+
     public class Labor : Task<object>, IDeputy
     {
         public IUnique Empty => Ussn.Empty;
@@ -126,6 +127,6 @@ namespace System.Labors
         public int CompareTo(IUnique other)
         {
             return SerialCode.CompareTo(other);
-        }       
+        }
     }
 }

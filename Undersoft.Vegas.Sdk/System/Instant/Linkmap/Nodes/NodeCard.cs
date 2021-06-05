@@ -14,9 +14,10 @@ namespace System.Instant
 {
     using System.Extract;
     using System.Instant.Linking;
-    using System.Sets;
     using System.Runtime.InteropServices;
+    using System.Sets;
     using System.Uniques;
+
 
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -115,7 +116,7 @@ namespace System.Instant
             return value.GetUniqueBytes();
         }
 
-        public override int[]    UniqueOrdinals()
+        public override int[] UniqueOrdinals()
         {
             return Member.KeyRubrics.Ordinals;
         }

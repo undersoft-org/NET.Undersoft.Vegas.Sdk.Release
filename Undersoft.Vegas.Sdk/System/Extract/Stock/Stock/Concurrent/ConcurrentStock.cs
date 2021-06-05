@@ -1,14 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.MemoryMappedFiles;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Extract.Stock.ConcurrentStock.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Extract.Stock
 {
+    using System;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Security.Permissions;
+    using System.Threading;
+
     /// <summary>
     /// A lock-free FIFO shared memory circular buffer (or ring buffer) utilising a <see cref="MemoryMappedFile"/>.
     /// </summary>
@@ -16,7 +25,6 @@ namespace System.Extract.Stock
     [SecurityPermission(SecurityAction.InheritanceDemand)]
     public unsafe class ConcurrentStock : Stock
     {
-        #region Structures
         [StructLayout(LayoutKind.Sequential)]
         public struct NodeHeader
         {
@@ -41,13 +49,12 @@ namespace System.Extract.Stock
             public volatile int DoneRead;
             public volatile int DoneWrite;
         }
-        #endregion
 
         public int NodeCount
         { get; private set; }
         public long NodeBufferSize
         { get; private set; }
-        
+
         protected EventWaitHandle DataExists
         { get; set; }
         protected EventWaitHandle NodeAvailable
@@ -88,32 +95,30 @@ namespace System.Extract.Stock
 
         private NodeHeader* _nodeHeader = null;
 
-        public ConcurrentStock(string file, string name, int nodeCount, long nodeBufferSize) : 
+        public ConcurrentStock(string file, string name, int nodeCount, long nodeBufferSize) :
                              this(file, name, nodeCount, nodeBufferSize, true)
         {
             Open();
             CheckArchive();
         }
-        public ConcurrentStock(string file, string name) : 
+        public ConcurrentStock(string file, string name) :
                              this(file, name, 0, 0, false)
         {
             Open();
         }
 
-        private ConcurrentStock(string file, string name, int nodeCount, long nodeBufferSize, bool ownsSharedMemory) : 
-                              base(file, name, Marshal.SizeOf(typeof(NodeHeader)) + 
-                               (Marshal.SizeOf(typeof(Node)) * nodeCount) + 
-                               (nodeCount * nodeBufferSize), 
+        private ConcurrentStock(string file, string name, int nodeCount, long nodeBufferSize, bool ownsSharedMemory) :
+                              base(file, name, Marshal.SizeOf(typeof(NodeHeader)) +
+                               (Marshal.SizeOf(typeof(Node)) * nodeCount) +
+                               (nodeCount * nodeBufferSize),
                                ownsSharedMemory)
         {
-            #region Argument validation
             if (ownsSharedMemory && nodeCount < 2)
                 throw new ArgumentOutOfRangeException("nodeCount", nodeCount, "The node count must be a minimum of 2.");
-            #if DEBUG
+#if DEBUG
             else if (!ownsSharedMemory && (nodeCount != 0 || nodeBufferSize > 0))
                 System.Diagnostics.Debug.Write("Node count and nodeBufferSize are ignored when opening an existing shared memory circular buffer.", "Warning");
-            #endif
-            #endregion
+#endif
 
             if (IsOwnerOfSharedMemory)
             {
@@ -124,11 +129,11 @@ namespace System.Extract.Stock
 
         public bool CheckArchive(int timeout = 1000)
         {
-            if(Exists)
+            if (Exists)
             {
-                if(FixSize)
+                if (FixSize)
                 {
-                    NodeBufferSize = (int)((BufferSize - (Marshal.SizeOf(typeof(NodeHeader)) + 
+                    NodeBufferSize = (int)((BufferSize - (Marshal.SizeOf(typeof(NodeHeader)) +
                                      (Marshal.SizeOf(typeof(Node)) * NodeCount))) / NodeCount);
                 }
                 //Prepare first node for reading
@@ -142,7 +147,6 @@ namespace System.Extract.Stock
             return false;
         }
 
-        #region Open / Close
         protected override bool DoOpen()
         {
             // Create signal events
@@ -176,7 +180,7 @@ namespace System.Extract.Stock
             if (!IsOwnerOfSharedMemory)
                 return;
 
-            NodeHeader header = new NodeHeader();           
+            NodeHeader header = new NodeHeader();
             header.ReadStart = 0;
             header.ReadEnd = 0;
             header.WriteEnd = 0;
@@ -230,9 +234,7 @@ namespace System.Extract.Stock
 
             _nodeHeader = null;
         }
-        #endregion
 
-        #region Node Writing
         protected virtual Node* GetNodeForWriting(int timeout)
         {
             for (; ; )
@@ -249,10 +251,10 @@ namespace System.Extract.Stock
                     return null;
                 }
 
-                #pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
+#pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
                 if (Interlocked.CompareExchange(ref _nodeHeader->WriteStart, node->Next, blockIndex) == blockIndex)
                     return node;
-                #pragma warning restore 0420
+#pragma warning restore 0420
 
                 // Another thread has already acquired this node for writing, try again.
                 continue;
@@ -271,7 +273,7 @@ namespace System.Extract.Stock
             {
                 int blockIndex = _nodeHeader->WriteEnd;
                 node = this[blockIndex];
-                #pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
+#pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
                 if (Interlocked.CompareExchange(ref node->DoneWrite, 0, 1) != 1)
                 {
                     // If we get here then another thread either another thread
@@ -282,7 +284,7 @@ namespace System.Extract.Stock
 
                 // Move the pointer one forward
                 Interlocked.CompareExchange(ref _nodeHeader->WriteEnd, node->Next, blockIndex);
-                #pragma warning restore 0420
+#pragma warning restore 0420
 
                 // Signal the "data exists" event if read threads are waiting
                 if (blockIndex == _nodeHeader->ReadStart)
@@ -298,10 +300,10 @@ namespace System.Extract.Stock
 
             // Copy the data
             long amount = Math.Min(source.Length - startIndex, NodeBufferSize);
-            
+
             Marshal.Copy(source, startIndex, new IntPtr(BufferStartPtr + node->Offset), (int)amount);
             node->AmountWritten = amount;
-            
+
 
             // Writing is complete, make readable
             PostNode(node);
@@ -382,9 +384,7 @@ namespace System.Extract.Stock
 
             return amount;
         }
-        #endregion
 
-        #region Node Reading
         public NodeHeader ReadNodeHeader()
         {
             return (NodeHeader)Marshal.PtrToStructure(new IntPtr(_nodeHeader), typeof(NodeHeader));
@@ -406,10 +406,10 @@ namespace System.Extract.Stock
                     return null;
                 }
 
-                #pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
+#pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
                 if (Interlocked.CompareExchange(ref _nodeHeader->ReadStart, node->Next, blockIndex) == blockIndex)
                     return node;
-                #pragma warning restore 0420
+#pragma warning restore 0420
 
                 // Another thread has already acquired this node for reading, try again
                 continue;
@@ -430,7 +430,7 @@ namespace System.Extract.Stock
             {
                 int blockIndex = _nodeHeader->ReadEnd;
                 node = this[blockIndex];
-                #pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
+#pragma warning disable 0420 // ignore ref to volatile warning - Interlocked API
                 if (Interlocked.CompareExchange(ref node->DoneRead, 0, 1) != 1)
                 {
                     // If we get here then another read thread has already moved the pointer
@@ -440,14 +440,14 @@ namespace System.Extract.Stock
 
                 // Move the pointer forward one node
                 Interlocked.CompareExchange(ref _nodeHeader->ReadEnd, node->Next, blockIndex);
-                #pragma warning restore 0420
+#pragma warning restore 0420
 
-               // If a writer thread is waiting on "node available" signal the event
+                // If a writer thread is waiting on "node available" signal the event
                 if (node->Prev == _nodeHeader->WriteStart)
-                        NodeAvailable.Set();
+                    NodeAvailable.Set();
             }
         }
-      
+
         public virtual int Read(byte[] destination, int startIndex = 0, Type t = null, int timeout = 1000)
         {
             Node* node = GetNodeForReading(timeout);
@@ -463,7 +463,7 @@ namespace System.Extract.Stock
             ReturnNode(node);
 
             return amount;
-        }      
+        }
 
         public virtual int Read(object destination, int startIndex = 0, Type t = null, int timeout = 1000)
         {
@@ -546,6 +546,5 @@ namespace System.Extract.Stock
         {
             return default(T);
         }
-        #endregion
     }
 }

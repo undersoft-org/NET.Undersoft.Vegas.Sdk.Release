@@ -1,12 +1,24 @@
-﻿using System.Linq;
-using System.Uniques;
-using System.Sets;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Mathset.Computation.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Mathset
 {
+    using System.Linq;
+    using System.Sets;
+    using System.Uniques;
+
     public class Computation : IComputation
     {
-        private MathRubrics computation;    
+        private MathRubrics computation;
 
         public Computation(IFigures data)
         {
@@ -28,7 +40,7 @@ namespace System.Instant.Mathset
         {
             get
             {
-               return GetMathset(name);
+                return GetMathset(name);
             }
         }
         public Mathset this[MemberRubric rubric]
@@ -89,7 +101,7 @@ namespace System.Instant.Mathset
         public IUnique Empty => Ussn.Empty;
         public ulong UniqueKey
         { get => serialcode.UniqueKey; set => serialcode.UniqueKey = value; }
-       
+
 
         public int CompareTo(IUnique other)
         {

@@ -1,13 +1,13 @@
 ﻿/*************************************************
    Copyright (c) 2021 Undersoft
 
-   Hasher.cs
+   System.Uniques.Hasher.cs
    
-   @project: [name]
+   @project: Undersoft.Vegas.Sdk
    @stage: Development
-   @author: Dariusz Hanc                                                  
-   @date: (05.06.2021)                                            
-   @licence MIT                                       
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
  *************************************************/
 
 namespace System.Uniques

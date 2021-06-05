@@ -23,15 +23,18 @@ namespace System
     {
         #region Fields
 
-        public static bool resolvingAssigned;
+        public static bool resolveAssigned;
 
         #endregion
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes static members of the <see cref="Assemblies"/> class.
+        /// </summary>
         static Assemblies()
         {
-            resolvingAssigned = ResolvingFunction();
+            resolveAssigned = ResolveExecuting();
         }
 
         #endregion
@@ -123,9 +126,9 @@ namespace System
         /// The ResolveExecuting.
         /// </summary>
         /// <returns>The <see cref="bool"/>.</returns>
-        public static bool ResolvingFunction()
+        public static bool ResolveExecuting()
         {
-            if (!resolvingAssigned)
+            if (!resolveAssigned)
             {
                 AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
                 {

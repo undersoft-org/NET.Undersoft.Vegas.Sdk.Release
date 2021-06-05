@@ -1,10 +1,22 @@
-﻿using System.Globalization;
-using System.Uniques;
-using System.Data;
-using System.Linq;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Sqlset.DataReader.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Sqlset
 {
+    using System.Data;
+    using System.Globalization;
+    using System.Linq;
+    using System.Uniques;
+
     public class DataReader : IDataReader
     {
         // The DataCellsReader should always be open when returned to the user.
@@ -21,7 +33,7 @@ namespace System.Instant.Sqlset
         {
             m_resultset = resultset.Rubrics;
             x_size = resultset.Rubrics.Count;
-            m_values = resultset.Select(p => 
+            m_values = resultset.Select(p =>
                                     new object[] { p.SerialCode }
                                             .Concat(p.ValueArray).ToArray()).ToArray();
             y_size = m_values.Length;
@@ -38,7 +50,7 @@ namespace System.Instant.Sqlset
                                            .Concat(p.ValueArray).ToArray()).ToArray();
                 y_size = m_values.Length;
             }
-        }      
+        }
 
         public int Depth
         {
@@ -58,7 +70,7 @@ namespace System.Instant.Sqlset
         }
 
         public void Close()
-        {         
+        {
             m_fOpen = false;
         }
 
@@ -293,6 +305,3 @@ namespace System.Instant.Sqlset
 
     }
 }
-
-
-

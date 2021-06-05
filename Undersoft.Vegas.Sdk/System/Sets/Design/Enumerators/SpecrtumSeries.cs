@@ -1,5 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Sets.SpecrtumSeries.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 /*********************************************************************************
     Copyright (c) 2020 Undersoft
@@ -13,43 +22,101 @@ using System.Collections.Generic;
  *********************************************************************************/
 namespace System.Sets
 {
+    using System.Collections;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// Defines the <see cref="SpectrumSeries{V}" />.
+    /// </summary>
+    /// <typeparam name="V">.</typeparam>
     public class SpectrumSeries<V> : IEnumerator<BaseCard<V>>, IEnumerator
     {
-        private Spectrum<V> map;
+        #region Fields
+
+        public BaseCard<V> Entry;
         private int iterated = 0;
         private int lastReturned;
+        private Spectrum<V> map;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpectrumSeries{V}"/> class.
+        /// </summary>
+        /// <param name="Map">The Map<see cref="Spectrum{V}"/>.</param>
         public SpectrumSeries(Spectrum<V> Map)
         {
             map = Map;
             Entry = new Card64<V>();
         }
 
-        public BaseCard<V> Entry;
+        #endregion
 
-        public int Key { get { return (int)Entry.Key; } }
-        public V Value { get { return Entry.Value; } }
+        #region Properties
 
+        /// <summary>
+        /// Gets the Current.
+        /// </summary>
         public object Current => Entry;
 
+        /// <summary>
+        /// Gets the Key.
+        /// </summary>
+        public int Key
+        {
+            get { return (int)Entry.Key; }
+        }
+
+        /// <summary>
+        /// Gets the Value.
+        /// </summary>
+        public V Value
+        {
+            get { return Entry.Value; }
+        }
+
+        /// <summary>
+        /// Gets the Current.
+        /// </summary>
         BaseCard<V> IEnumerator<BaseCard<V>>.Current => Entry;
 
-        public bool MoveNext()
-        {
-            return Next();
-        }
+        #endregion
 
-        public void Reset()
+        #region Methods
+
+        /// <summary>
+        /// The Dispose.
+        /// </summary>
+        public void Dispose()
         {
-            Entry = new Card64<V>();
             iterated = 0;
+            Entry = null;
         }
 
+        /// <summary>
+        /// The HasNext.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool HasNext()
         {
             return iterated < map.Count;
         }
 
+        /// <summary>
+        /// The MoveNext.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
+        public bool MoveNext()
+        {
+            return Next();
+        }
+
+        /// <summary>
+        /// The Next.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool Next()
         {
             if (!HasNext())
@@ -74,11 +141,15 @@ namespace System.Sets
             return true;
         }
 
-        public void Dispose()
+        /// <summary>
+        /// The Reset.
+        /// </summary>
+        public void Reset()
         {
+            Entry = new Card64<V>();
             iterated = 0;
-            Entry = null;
         }
-    }
 
+        #endregion
+    }
 }

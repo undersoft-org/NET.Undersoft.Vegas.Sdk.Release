@@ -1,4 +1,17 @@
+/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Uniques.AssemblyInfo.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
+
 using System.Runtime.CompilerServices;
+
 
 [assembly: InternalsVisibleTo("System.Deal")]
 [assembly: InternalsVisibleTo("System.Sets")]

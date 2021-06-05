@@ -1,33 +1,96 @@
-﻿using System.Threading;
-using System.Net;
-using System.IO;
-using System.Net.Sockets;
-using System.Instant;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Deal.DealClient.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Deal
 {
+    using System.Instant;
+    using System.IO;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Threading;
+
+    /// <summary>
+    /// Defines the <see cref="DealClient" />.
+    /// </summary>
     public sealed class DealClient : IDealClient
     {
-        private Socket socket;
-        private ushort port;
-        private IPAddress ip;
-        private IPHostEntry host;
-        private int timeout = 50;
+        #region Fields
 
         private readonly ManualResetEvent connectNotice = new ManualResetEvent(false);
-
+        public IPEndPoint EndPoint;
         private ITransferContext context;
-        public ITransferContext Context
-        { get { return context; } set { context = value; } }       
-
-        public IDeputy Connected { get; set; }
-        public IDeputy HeaderSent { get; set; }
-        public IDeputy MessageSent { get; set; }
-        public IDeputy HeaderReceived { get; set; }
-        public IDeputy MessageReceived { get; set; }
-
+        private IPHostEntry host;
         private MemberIdentity identity;
-        public  MemberIdentity Identity
+        private IPAddress ip;
+        private ushort port;
+        private Socket socket;
+        private int timeout = 50;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DealClient"/> class.
+        /// </summary>
+        /// <param name="ConnectionIdentity">The ConnectionIdentity<see cref="MemberIdentity"/>.</param>
+        public DealClient(MemberIdentity ConnectionIdentity)
+        {
+            Identity = ConnectionIdentity;
+
+            if (Identity.Ip == null || Identity.Ip == "")
+                Identity.Ip = "127.0.0.1";
+            ip = IPAddress.Parse(Identity.Ip);
+            port = Convert.ToUInt16(Identity.Port);
+            host = Dns.GetHostEntry((Identity.Ip != null &&
+                                     Identity.Ip != string.Empty) ?
+                                     Identity.Ip :
+                                     string.Empty);
+
+            EndPoint = new IPEndPoint(ip, port);
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the Connected.
+        /// </summary>
+        public IDeputy Connected { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Context.
+        /// </summary>
+        public ITransferContext Context
+        {
+            get { return context; }
+            set { context = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the HeaderReceived.
+        /// </summary>
+        public IDeputy HeaderReceived { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HeaderSent.
+        /// </summary>
+        public IDeputy HeaderSent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Identity.
+        /// </summary>
+        public MemberIdentity Identity
         {
             get
             {
@@ -54,30 +117,29 @@ namespace System.Deal
             }
         }
 
-        public  IPEndPoint EndPoint;
+        /// <summary>
+        /// Gets or sets the MessageReceived.
+        /// </summary>
+        public IDeputy MessageReceived { get; set; }
 
-        public DealClient(MemberIdentity ConnectionIdentity)
-        {
-            Identity = ConnectionIdentity;
+        /// <summary>
+        /// Gets or sets the MessageSent.
+        /// </summary>
+        public IDeputy MessageSent { get; set; }
 
-            if(Identity.Ip == null || Identity.Ip == "")
-                Identity.Ip = "127.0.0.1";
-            ip =   IPAddress.Parse(Identity.Ip);
-            port = Convert.ToUInt16(Identity.Port);
-            host = Dns.GetHostEntry((Identity.Ip != null &&
-                                     Identity.Ip != string.Empty) ?
-                                     Identity.Ip :
-                                     string.Empty);
-            
-            EndPoint = new IPEndPoint(ip, port);
-        }
+        #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// The Connect.
+        /// </summary>
         public void Connect()
         {
-                   ushort _port = port;
-                string hostname = host.HostName;
-                  IPAddress _ip = ip;
-            IPEndPoint endpoint = new IPEndPoint(_ip, _port);            
+            ushort _port = port;
+            string hostname = host.HostName;
+            IPAddress _ip = ip;
+            IPEndPoint endpoint = new IPEndPoint(_ip, _port);
 
             try
             {
@@ -92,27 +154,30 @@ namespace System.Deal
             { }
         }
 
+        /// <summary>
+        /// The Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            connectNotice.Dispose();
+            Close();
+        }
+
+        /// <summary>
+        /// The IsConnected.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool IsConnected()
         {
-            if(socket != null && socket.Connected)
+            if (socket != null && socket.Connected)
                 return !(socket.Poll(timeout * 1000, SelectMode.SelectRead) && socket.Available == 0);
             return true;
         }
 
-        private void OnConnectCallback(IAsyncResult result)
-        {
-            ITransferContext context = (ITransferContext)result.AsyncState;        
-
-            try
-            {
-                context.Listener.EndConnect(result);
-                connectNotice.Set();
-            }
-            catch (SocketException ex)
-            {
-            }
-        }
-
+        /// <summary>
+        /// The Receive.
+        /// </summary>
+        /// <param name="messagePart">The messagePart<see cref="MessagePart"/>.</param>
         public void Receive(MessagePart messagePart)
         {
             AsyncCallback callback = HeaderReceivedCallBack;
@@ -125,10 +190,15 @@ namespace System.Deal
             else
                 context.Listener.BeginReceive(context.HeaderBuffer, 0, context.BufferSize, SocketFlags.None, callback, context);
         }
+
+        /// <summary>
+        /// The Send.
+        /// </summary>
+        /// <param name="messagePart">The messagePart<see cref="MessagePart"/>.</param>
         public void Send(MessagePart messagePart)
         {
             if (!IsConnected())
-                throw new Exception("Destination socket is not connected."); 
+                throw new Exception("Destination socket is not connected.");
             AsyncCallback callback = HeaderSentCallback;
             if (messagePart == MessagePart.Header)
             {
@@ -148,6 +218,84 @@ namespace System.Deal
             context.Listener.BeginSend(context.SerialBlock, 0, context.SerialBlock.Length, SocketFlags.None, callback, context);
         }
 
+        /// <summary>
+        /// The Close.
+        /// </summary>
+        private void Close()
+        {
+            try
+            {
+                if (!IsConnected())
+                {
+                    context.Dispose();
+                    return;
+                }
+                if (socket != null && socket.Connected)
+                {
+                    socket.Shutdown(SocketShutdown.Both);
+                    socket.Close();
+                }
+                context.Dispose();
+            }
+            catch (SocketException)
+            {
+                // 4 U 2 DO
+            }
+        }
+
+        /// <summary>
+        /// The HeaderReceivedCallBack.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
+        private void HeaderReceivedCallBack(IAsyncResult result)
+        {
+            ITransferContext context = (ITransferContext)result.AsyncState;
+            int receive = context.Listener.EndReceive(result);
+
+            if (receive > 0)
+                context.IncomingHeader(receive);
+
+            if (context.BlockSize > 0)
+            {
+                int buffersize = (context.BlockSize < context.BufferSize) ? (int)context.BlockSize : context.BufferSize;
+                context.Listener.BeginReceive(context.HeaderBuffer, 0, buffersize, SocketFlags.None, HeaderReceivedCallBack, context);
+            }
+            else
+            {
+                TransferOperation request = new TransferOperation(context.Transfer, MessagePart.Header, DirectionType.Receive);
+                request.Resolve(context);
+
+                if (!context.ReceiveMessage &&
+                    !context.SendMessage)
+                    context.Close = true;
+
+                context.HeaderReceivedNotice.Set();
+                HeaderReceived.Execute(this);
+            }
+        }
+
+        /// <summary>
+        /// The HeaderSentCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
+        private void HeaderSentCallback(IAsyncResult result)
+        {
+            ITransferContext context = (ITransferContext)result.AsyncState;
+            try
+            {
+                int sendcount = context.Listener.EndSend(result);
+            }
+            catch (SocketException) { }
+            catch (ObjectDisposedException) { }
+
+            context.HeaderSentNotice.Set();
+            HeaderSent.Execute(this);
+        }
+
+        /// <summary>
+        /// The MessageReceivedCallBack.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         private void MessageReceivedCallBack(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
@@ -180,9 +328,9 @@ namespace System.Deal
                 {
                     context.BatchesReceivedNotice.WaitOne();
 
-                    if (context.SendMessage)          
+                    if (context.SendMessage)
                         context.MessageSentNotice.WaitOne();
-                    
+
                     context.Close = true;
 
                     context.MessageReceivedNotice.Set();
@@ -190,12 +338,17 @@ namespace System.Deal
                 }
             }
         }
+
+        /// <summary>
+        /// The MessageSentCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
         private void MessageSentCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
             try
             {
-                int sendcount = context.Listener.EndSend(result);               
+                int sendcount = context.Listener.EndSend(result);
             }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
@@ -216,72 +369,24 @@ namespace System.Deal
             }
         }
 
-        private void HeaderReceivedCallBack(IAsyncResult result)
+        /// <summary>
+        /// The OnConnectCallback.
+        /// </summary>
+        /// <param name="result">The result<see cref="IAsyncResult"/>.</param>
+        private void OnConnectCallback(IAsyncResult result)
         {
             ITransferContext context = (ITransferContext)result.AsyncState;
-            int receive = context.Listener.EndReceive(result);
 
-            if (receive > 0)
-                context.IncomingHeader(receive);
-
-            if (context.BlockSize > 0)
-            {
-                int buffersize = (context.BlockSize < context.BufferSize) ? (int)context.BlockSize : context.BufferSize;
-                context.Listener.BeginReceive(context.HeaderBuffer, 0, buffersize, SocketFlags.None, HeaderReceivedCallBack, context);
-            }
-            else
-            {
-                TransferOperation request = new TransferOperation(context.Transfer, MessagePart.Header, DirectionType.Receive);
-                request.Resolve(context);
-
-                if (!context.ReceiveMessage &&
-                    !context.SendMessage)
-                    context.Close = true;
-
-                context.HeaderReceivedNotice.Set();
-                HeaderReceived.Execute(this);
-            }
-        }
-        private void HeaderSentCallback(IAsyncResult result)
-        {
-            ITransferContext context = (ITransferContext)result.AsyncState;
             try
             {
-                int sendcount = context.Listener.EndSend(result);
+                context.Listener.EndConnect(result);
+                connectNotice.Set();
             }
-            catch (SocketException) { }
-            catch (ObjectDisposedException) { }
-
-            context.HeaderSentNotice.Set();
-            HeaderSent.Execute(this);
-        }
-
-        private void Close()
-        {
-            try
+            catch (SocketException ex)
             {
-                if (!IsConnected())
-                {
-                    context.Dispose();
-                    return;
-                }
-                if (socket != null && socket.Connected)
-                {
-                    socket.Shutdown(SocketShutdown.Both);
-                    socket.Close();
-                }
-                context.Dispose();
-            }
-            catch (SocketException)
-            {
-                // 4 U 2 DO
             }
         }
 
-        public void Dispose()
-        {
-            connectNotice.Dispose();
-            Close();
-        }      
+        #endregion
     }
 }

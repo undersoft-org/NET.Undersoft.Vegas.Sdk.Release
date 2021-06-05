@@ -14,6 +14,7 @@ namespace System.Labors
     using System.Linq;
     using System.Sets;
 
+
     public class NoteEvokers : Catalog<NoteEvoker>
     {
         public void AddRange(List<NoteEvoker> _evokers)

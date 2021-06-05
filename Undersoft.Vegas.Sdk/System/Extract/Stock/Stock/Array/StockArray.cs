@@ -1,12 +1,24 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Extract;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Extract.Stock.StockArray.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Extract.Stock
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Extract;
+    using System.Runtime.InteropServices;
+    using System.Security.Permissions;
+
     [SecurityPermission(SecurityAction.LinkDemand)]
     [SecurityPermission(SecurityAction.InheritanceDemand)]
     public unsafe class StockArray : MemoryStock, IList<object>, IStock
@@ -27,7 +39,7 @@ namespace System.Extract.Stock
                 Write(value, index, type);
             }
         }
-              
+
         public object this[int index, int field, Type t]
         {
             get
@@ -89,7 +101,6 @@ namespace System.Extract.Stock
             return true;
         }
 
-        #region Writing
 
         new public void Write(object data, long position = 0, Type t = null, int timeout = 1000)
         {
@@ -132,9 +143,7 @@ namespace System.Extract.Stock
             base.Write(ptr, length, (position * _elementSize), t, timeout);
         }
 
-        #endregion
 
-        #region Reading
 
         new public void Read(object data, long position = 0, Type t = null, int timeout = 1000)
         {
@@ -174,7 +183,7 @@ namespace System.Extract.Stock
             if (count + position > Length || position < 0)
                 throw new ArgumentOutOfRangeException("index");
 
-            base.Read(buffer,index, count, position * _elementSize, t, timeout);
+            base.Read(buffer, index, count, position * _elementSize, t, timeout);
         }
         new public void Read(IntPtr destination, long length, long position = 0, Type t = null, int timeout = 1000)
         {
@@ -207,9 +216,7 @@ namespace System.Extract.Stock
         {
             Extractor.CopyBlock(destination.GetStockPtr() + position, this.GetStockPtr(), length);
         }
-        #endregion
 
-        #region IEnumerable<T>
 
         public IEnumerator<object> GetEnumerator()
         {
@@ -223,9 +230,7 @@ namespace System.Extract.Stock
             return this.GetEnumerator();
         }
 
-        #endregion
 
-        #region IList<object>
 
         public void Add(object item)
         {
@@ -276,7 +281,6 @@ namespace System.Extract.Stock
             throw new NotImplementedException();
         }
 
-        #endregion
 
     }
 }

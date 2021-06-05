@@ -1,14 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Linq;
-using System.Uniques;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.FilterExpression.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Treatments
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Uniques;
+
     public class QueryExpression
     {
-        private System.Globalization.NumberFormatInfo nfi = new System.Globalization.NumberFormatInfo();        
+        private System.Globalization.NumberFormatInfo nfi = new System.Globalization.NumberFormatInfo();
 
         private Expression<Func<IFigure, bool>> Expression
         { get; set; }
@@ -88,14 +100,14 @@ namespace System.Instant.Treatments
                     {
                         case OperandType.Equal:
 
-                            ex = (r => r[fc.FilterRubric.FieldId] != null ? 
+                            ex = (r => r[fc.FilterRubric.FieldId] != null ?
                             fc.FilterRubric.RubricType == typeof(IUnique) ||
                             fc.FilterRubric.RubricType == typeof(string) ||
                             fc.FilterRubric.RubricType == typeof(DateTime) ?
-                            r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)                                    
+                            r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)
                                 .Equals(Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
                             r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType)
-                                 .Equals(Value.ComparableDouble(fc.FilterRubric.RubricType)) : 
+                                 .Equals(Value.ComparableDouble(fc.FilterRubric.RubricType)) :
                               false);
                             break;
 
@@ -105,26 +117,26 @@ namespace System.Instant.Treatments
                              fc.FilterRubric.RubricType == typeof(IUnique) ||
                              fc.FilterRubric.RubricType == typeof(string) ||
                              fc.FilterRubric.RubricType == typeof(DateTime) ?
-                              r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType) 
+                              r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)
                                                       >=
                               (Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
-                            r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType) 
+                            r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType)
                                                       >=
                             (Value.ComparableDouble(fc.FilterRubric.RubricType)) : false);
                             break;
 
                         case OperandType.More:
 
-                             ex = (r => r[fc.FilterRubric.FieldId] != null ?
-                             fc.FilterRubric.RubricType == typeof(IUnique) ||
-                             fc.FilterRubric.RubricType == typeof(string) ||
-                             fc.FilterRubric.RubricType == typeof(DateTime) ?
-                              r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType) 
-                                                      >
-                              (Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
-                            r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType) 
-                                                      >
-                            (Value.ComparableDouble(fc.FilterRubric.RubricType)) : false);
+                            ex = (r => r[fc.FilterRubric.FieldId] != null ?
+                            fc.FilterRubric.RubricType == typeof(IUnique) ||
+                            fc.FilterRubric.RubricType == typeof(string) ||
+                            fc.FilterRubric.RubricType == typeof(DateTime) ?
+                             r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)
+                                                     >
+                             (Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
+                           r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType)
+                                                     >
+                           (Value.ComparableDouble(fc.FilterRubric.RubricType)) : false);
                             break;
 
                         case OperandType.EqualOrLess:
@@ -133,10 +145,10 @@ namespace System.Instant.Treatments
                             fc.FilterRubric.RubricType == typeof(IUnique) ||
                             fc.FilterRubric.RubricType == typeof(string) ||
                             fc.FilterRubric.RubricType == typeof(DateTime) ?
-                            r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType) 
+                            r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)
                                                     <=
                             (Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
-                            r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType) 
+                            r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType)
                                                     <=
                             (Value.ComparableDouble(fc.FilterRubric.RubricType)) : false);
                             break;
@@ -147,10 +159,10 @@ namespace System.Instant.Treatments
                              fc.FilterRubric.RubricType == typeof(IUnique) ||
                              fc.FilterRubric.RubricType == typeof(string) ||
                              fc.FilterRubric.RubricType == typeof(DateTime) ?
-                             r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType) 
+                             r[fc.FilterRubric.FieldId].ComparableUInt64(fc.FilterRubric.RubricType)
                                                     <
                              (Value.ComparableUInt64(fc.FilterRubric.RubricType)) :
-                             r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType) 
+                             r[fc.FilterRubric.FieldId].ComparableDouble(fc.FilterRubric.RubricType)
                                                     <
                              (Value.ComparableDouble(fc.FilterRubric.RubricType)) : false);
                             break;
@@ -162,12 +174,12 @@ namespace System.Instant.Treatments
 
                     ex = (r => r[fc.FilterRubric.FieldId] != null ?
                     Convert.ChangeType(r[fc.FilterRubric.FieldId], fc.FilterRubric.RubricType).ToString()
-                        .Contains(Convert.ChangeType(Value, fc.FilterRubric.RubricType).ToString()) : 
+                        .Contains(Convert.ChangeType(Value, fc.FilterRubric.RubricType).ToString()) :
                             false);
                 else
                     ex = (r => r[fc.FilterRubric.FieldId] != null ?
                     !Convert.ChangeType(r[fc.FilterRubric.FieldId], fc.FilterRubric.RubricType).ToString()
-                        .Contains(Convert.ChangeType(Value, fc.FilterRubric.RubricType).ToString()) : 
+                        .Contains(Convert.ChangeType(Value, fc.FilterRubric.RubricType).ToString()) :
                             false);
             }
             return ex;

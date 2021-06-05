@@ -1,11 +1,14 @@
-﻿using System.Runtime.InteropServices;
-using System.Extract;
-using System.Uniques;
-using System.Sets;
-using System.Instant.Linking;
-using System.Linq;
-using System.Reflection;
-using System.IO;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.FigureCard.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 /******************************************************************
     Copyright (c) 2020 Undersoft
@@ -19,7 +22,13 @@ using System.IO;
  
  ******************************************************************/
 namespace System.Instant
-{     
+{
+    using System.Extract;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Sets;
+    using System.Uniques;
+
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public class FigureCard : BaseCard<IFigure>, IFigure, IEquatable<IFigure>, IComparable<IFigure>
@@ -39,9 +48,9 @@ namespace System.Instant
             Figures = figures;
         }
         public FigureCard(IFigure value, IFigures figures) : base(value)
-        {            
+        {
             Figures = figures;
-            UniquesAsKey();            
+            UniquesAsKey();
         }
         public FigureCard(ICard<IFigure> value, IFigures figures) : base(value)
         {
@@ -71,7 +80,7 @@ namespace System.Instant
         }
         public override void Set(ICard<IFigure> card)
         {
-            this.value = card.Value;        
+            this.value = card.Value;
         }
 
         public override bool Equals(ulong key)
@@ -82,7 +91,7 @@ namespace System.Instant
         {
             return Key.Equals(y.UniqueKey());
         }
-        public          bool Equals(IFigure other)
+        public bool Equals(IFigure other)
         {
             return Key == other.UniqueKey;
         }
@@ -104,7 +113,7 @@ namespace System.Instant
         {
             return (int)(Key - other.Key);
         }
-        public          int CompareTo(IFigure other)
+        public int CompareTo(IFigure other)
         {
             return (int)(Key - other.UniqueKey);
         }
@@ -157,8 +166,8 @@ namespace System.Instant
 
         public override ulong Key
         {
-            get => value.UniqueKey;                                                   
-            set => this.value.UniqueKey = value;            
+            get => value.UniqueKey;
+            set => this.value.UniqueKey = value;
         }
 
         public override ulong UniqueKey
@@ -185,21 +194,21 @@ namespace System.Instant
             }
         }
 
-        public     Ussn SerialCode
+        public Ussn SerialCode
         {
             get => value.SerialCode;
             set => this.value.SerialCode = value;
         }
-       
+
         public IFigures Figures { get; set; }
 
         public object GetPreset(int fieldId)
-        {           
+        {
             if (presets != null && !Figures.Prime)
             {
                 object val = presets.Get(fieldId);
-                if (val != null) 
-                    return val;                
+                if (val != null)
+                    return val;
             }
             return value[fieldId];
         }
@@ -226,8 +235,8 @@ namespace System.Instant
         }
 
         public void SetPreset(int fieldId, object value)
-        {           
-            if (GetPreset(fieldId).Equals(value))           
+        {
+            if (GetPreset(fieldId).Equals(value))
                 return;
             if (!Figures.Prime)
             {
@@ -236,7 +245,7 @@ namespace System.Instant
                 presets.Put(fieldId, value);
             }
             else
-                this.value[fieldId] = value;            
+                this.value[fieldId] = value;
         }
         public void SetPreset(string propertyName, object value)
         {

@@ -1,12 +1,23 @@
-﻿using System.Uniques;
-using System.Instant.Linking;
-using System.Instant.Treatments;
-using System.IO;
-using System.Sets;
-using System.Runtime.InteropServices;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.FigureCatalog.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant
 {
+    using System.Instant.Linking;
+    using System.Instant.Treatments;
+    using System.IO;
+    using System.Sets;
+    using System.Uniques;
+
     public abstract class FigureCatalog : BaseCatalog<IFigure>, IFigures
     {
         public IInstant Instant { get; set; }
@@ -15,15 +26,15 @@ namespace System.Instant
 
         public abstract object this[int index, string propertyName] { get; set; }
 
-        public abstract object this[int index, int fieldId] { get; set; }       
+        public abstract object this[int index, int fieldId] { get; set; }
 
-        public abstract IRubrics Rubrics { get; set; }      
+        public abstract IRubrics Rubrics { get; set; }
 
         public abstract IRubrics KeyRubrics { get; set; }
 
         public abstract IFigure NewFigure();
 
-        public abstract  Type FigureType { get; set; }
+        public abstract Type FigureType { get; set; }
 
         public abstract int FigureSize { get; set; }
 
@@ -38,7 +49,7 @@ namespace System.Instant
             return new FigureCard(this);
         }
 
-        public override ICard<IFigure> NewCard(ulong  key, IFigure value)
+        public override ICard<IFigure> NewCard(ulong key, IFigure value)
         {
             return new FigureCard(key, value, this);
         }
@@ -114,7 +125,7 @@ namespace System.Instant
         public Linker Linker { get; set; } = new Linker();
 
         private Treatment treatment;
-        public  Treatment Treatment
+        public Treatment Treatment
         {
             get => treatment == null ? treatment = new Treatment(this) : treatment;
             set => treatment = value;
@@ -122,7 +133,6 @@ namespace System.Instant
 
         public IDeck<IComputation> Computations { get; set; }
 
-        #region Uniques
 
         public IUnique Empty => Ussn.Empty;
 
@@ -148,10 +158,8 @@ namespace System.Instant
         {
             return SerialCode.CompareTo(other);
         }
-    
-        #endregion       
 
-        #region Formatter
+
 
         public int SerialCount { get; set; }
         public int DeserialCount { get; set; }
@@ -183,11 +191,10 @@ namespace System.Instant
         public object GetHeader()
         {
             return this;
-        }       
+        }
 
-        public int ItemsCount => Count;      
+        public int ItemsCount => Count;
 
-        #endregion
 
     }
 }

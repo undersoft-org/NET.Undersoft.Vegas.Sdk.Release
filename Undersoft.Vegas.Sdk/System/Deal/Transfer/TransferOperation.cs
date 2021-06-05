@@ -1,24 +1,48 @@
-﻿using System.Text;
-using System.Linq;
-using System.Collections;
-using System.Sets;
-using System.Instant;
-using System;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Deal.TransferOperation.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Deal
-{   
-    public class TransferOperation
-    { 
-        private DealTransfer transaction;
-        private DealContext transportContext;
+{
+    using System;
+    using System.Collections;
+    using System.Linq;
+    using System.Text;
 
-        private ITransferContext transferContext;
-        private ServiceSite site;
+    /// <summary>
+    /// Defines the <see cref="TransferOperation" />.
+    /// </summary>
+    public class TransferOperation
+    {
+        #region Fields
+
         private DirectionType direction;
+        private ProtocolMethod method;
         private MessagePart part;
         private DealProtocol protocol;
-        private ProtocolMethod method;
+        private ServiceSite site;
+        private DealTransfer transaction;
+        private ITransferContext transferContext;
+        private DealContext transportContext;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransferOperation"/> class.
+        /// </summary>
+        /// <param name="_transaction">The _transaction<see cref="DealTransfer"/>.</param>
+        /// <param name="_part">The _part<see cref="MessagePart"/>.</param>
+        /// <param name="_direction">The _direction<see cref="DirectionType"/>.</param>
         public TransferOperation(DealTransfer _transaction, MessagePart _part, DirectionType _direction)
         {
             transaction = _transaction;
@@ -31,6 +55,14 @@ namespace System.Deal
             method = transferContext.Method;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Resolve.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
         public void Resolve(ISerialBuffer buffer = null)
         {
             switch (protocol)
@@ -94,8 +126,8 @@ namespace System.Deal
                             break;
                     }
                     break;
-            
-                case DealProtocol.NONE:              
+
+                case DealProtocol.NONE:
                     switch (site)
                     {
                         case ServiceSite.Server:
@@ -155,7 +187,7 @@ namespace System.Deal
                     }
                     break;
                 case DealProtocol.HTTP:
-                    switch(method)
+                    switch (method)
                     {
                         case ProtocolMethod.GET:
                             switch (site)
@@ -168,7 +200,7 @@ namespace System.Deal
                                             {
                                                 case MessagePart.Header:
                                                     SrvRecGet(buffer);
-                                                    break;                                              
+                                                    break;
                                             }
                                             break;
                                         case DirectionType.Send:
@@ -176,7 +208,7 @@ namespace System.Deal
                                             {
                                                 case MessagePart.Header:
                                                     SrvSendGet();
-                                                    break;                                               
+                                                    break;
                                             }
                                             break;
                                     }
@@ -193,7 +225,7 @@ namespace System.Deal
                                             switch (part)
                                             {
                                                 case MessagePart.Header:
-                                                     SrvRecPost(buffer);
+                                                    SrvRecPost(buffer);
                                                     break;
                                             }
                                             break;
@@ -240,6 +272,130 @@ namespace System.Deal
             }
         }
 
+        /// <summary>
+        /// The CltRecHead.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
+        private void CltRecHead(ISerialBuffer buffer)
+        {
+            DealHeader headerObject = (DealHeader)transaction.MyHeader.Deserialize(buffer);
+
+            if (headerObject != null)
+            {
+                transaction.HeaderReceived = headerObject;
+
+                transaction.MyHeader.Context.Identity.Key = null;
+                transaction.MyHeader.Context.Identity.Name = null;
+                transaction.MyHeader.Context.Identity.UserId = transaction.HeaderReceived.Context.Identity.UserId;
+                transaction.MyHeader.Context.Identity.Token = transaction.HeaderReceived.Context.Identity.Token;
+                transaction.MyHeader.Context.Identity.DeptId = transaction.HeaderReceived.Context.Identity.DeptId;
+
+                object reciveContent = transaction.HeaderReceived.Content;
+
+                Type[] ifaces = reciveContent.GetType().GetInterfaces();
+                if (ifaces.Contains(typeof(ISerialFormatter)) && ifaces.Contains(typeof(ISerialObject)))
+                {
+                    if (transaction.MyHeader.Content == null)
+                        transaction.MyHeader.Content = ((ISerialObject)reciveContent).Locate();
+
+                    object myContent = transaction.MyHeader.Content;
+
+                    ((ISerialObject)myContent).Merge(reciveContent);
+
+                    int objectCount = transaction.HeaderReceived.Context.ObjectsCount;
+                    if (objectCount == 0)
+                        transferContext.ReceiveMessage = false;
+                    else
+                        transaction.MessageReceived = new DealMessage(transaction, DirectionType.Receive, myContent);
+                }
+                else if (reciveContent is Hashtable)
+                {
+                    Hashtable hashTable = (Hashtable)reciveContent;
+                    if (hashTable.Contains("Register"))
+                    {
+                        transferContext.Denied = !(bool)hashTable["Register"];
+                        if (transferContext.Denied)
+                        {
+                            transferContext.Close = true;
+                            transferContext.ReceiveMessage = false;
+                            transferContext.SendMessage = false;
+                        }
+                    }
+                }
+                else
+                    transferContext.SendMessage = false;
+            }
+        }
+
+        /// <summary>
+        /// The CltRecMsg.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
+        private void CltRecMsg(ISerialBuffer buffer)
+        {
+            object serialCardsObj = ((object[])transaction.MessageReceived.Content)[buffer.DeserialBlockId];
+            ISerialFormatter serialCards = (ISerialFormatter)serialCardsObj;
+
+            object deserialCardsObj = serialCards.Deserialize(buffer);
+            ISerialFormatter deserialCards = (ISerialFormatter)deserialCardsObj;
+            if (deserialCards.DeserialCount <= deserialCards.ProgressCount || deserialCards.ProgressCount == 0)
+            {
+                transaction.Context.ObjectsLeft--;
+                deserialCards.ProgressCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// The CltSendHead.
+        /// </summary>
+        private void CltSendHead()
+        {
+            transaction.Manager.HeaderContent(transferContext.Transfer.MyHeader.Content,
+                                              transferContext.Transfer.MyHeader.Content,
+                                              DirectionType.Send);
+
+            if (transaction.MyHeader.Context.ObjectsCount == 0)
+                transferContext.SendMessage = false;
+
+            transferContext.Transfer.MyHeader.Serialize(transferContext, 0, 0);
+        }
+
+        /// <summary>
+        /// The CltSendMsg.
+        /// </summary>
+        private void CltSendMsg()
+        {
+            object serialcards = ((object[])transaction.MyMessage.Content)[transferContext.ObjectPosition];
+
+            int serialBlockId = ((ISerialFormatter)serialcards).Serialize(transferContext, transferContext.SerialBlockId, 5000);
+            if (serialBlockId < 0)
+            {
+                if (transferContext.ObjectPosition < (transaction.MyHeader.Context.ObjectsCount - 1))
+                {
+                    transferContext.ObjectPosition++;
+                    transferContext.SerialBlockId = 0;
+                    return;
+                }
+            }
+            transferContext.SerialBlockId = serialBlockId;
+        }
+
+        /// <summary>
+        /// The SrvRecGet.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
+        private void SrvRecGet(ISerialBuffer buffer)
+        {
+            transferContext.SendMessage = false;
+            transferContext.ReceiveMessage = false;
+            transaction.HeaderReceived = transaction.MyHeader;
+            transferContext.HandleGetRequest();
+        }
+
+        /// <summary>
+        /// The SrvRecHead.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
         private void SrvRecHead(ISerialBuffer buffer)
         {
             bool isError = false;
@@ -249,7 +405,7 @@ namespace System.Deal
                 DealHeader headerObject = (DealHeader)transaction.MyHeader.Deserialize(buffer);
                 if (headerObject != null)
                 {
-                    transaction.HeaderReceived =  headerObject;
+                    transaction.HeaderReceived = headerObject;
 
                     if (DealServer.Security.Register(transaction.HeaderReceived.Context.Identity, true))
                     {
@@ -282,8 +438,8 @@ namespace System.Deal
                                         //else
                                         //{
                                         //    ((ISettings)myheader).State.Expeled = true;
-                                            transaction.MyHeader.Content = myheader;
-                                       // }
+                                        transaction.MyHeader.Content = myheader;
+                                        // }
                                     }
                                     else
                                     {
@@ -342,6 +498,11 @@ namespace System.Deal
                 transaction.MyHeader.Context.Errors++;
             }
         }
+
+        /// <summary>
+        /// The SrvRecMsg.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
         private void SrvRecMsg(ISerialBuffer buffer)
         {
             object serialCardsObj = ((object[])transaction.MessageReceived.Content)[buffer.DeserialBlockId];
@@ -350,142 +511,25 @@ namespace System.Deal
             if (deserialCards.DeserialCount <= deserialCards.ProgressCount || deserialCards.ProgressCount == 0)
             {
                 transaction.Context.ObjectsLeft--;
-                deserialCards.ProgressCount = 0;               
-            }
-        }
-
-        private void SrvSendHead()
-        {
-            transaction.Manager.HeaderContent(transferContext.Transfer.MyHeader.Content,
-                                              transferContext.Transfer.MyHeader.Content, 
-                                              DirectionType.Send);
-
-            if (transaction.MyHeader.Context.ObjectsCount == 0)
-                transferContext.SendMessage = false;
-
-            transferContext.Transfer.MyHeader.Serialize(transferContext, 0, 0);
-        }
-        private void SrvSendMsg()
-        {            
-            int serialBlockId = ((ISerialFormatter[])transaction.MyMessage.Content)[transferContext.ObjectPosition].Serialize(transferContext, transferContext.SerialBlockId, 5000);
-
-            if (serialBlockId < 0)
-            {
-                if (transferContext.ObjectPosition < (transaction.MyHeader.Context.ObjectsCount - 1))
-                {
-                    transferContext.ObjectPosition++;
-                    transferContext.SerialBlockId = 0;
-                    return;
-                }           
-            }
-            transferContext.SerialBlockId = serialBlockId;
-        }
-
-        private void CltRecHead(ISerialBuffer buffer)
-        {
-            DealHeader headerObject = (DealHeader)transaction.MyHeader.Deserialize(buffer);
-
-            if (headerObject != null)
-            {
-                transaction.HeaderReceived = headerObject;
-
-                transaction.MyHeader.Context.Identity.Key = null;
-                transaction.MyHeader.Context.Identity.Name = null;
-                transaction.MyHeader.Context.Identity.UserId = transaction.HeaderReceived.Context.Identity.UserId;
-                transaction.MyHeader.Context.Identity.Token = transaction.HeaderReceived.Context.Identity.Token;
-                transaction.MyHeader.Context.Identity.DeptId = transaction.HeaderReceived.Context.Identity.DeptId;
-
-                object reciveContent = transaction.HeaderReceived.Content;
-
-                Type[] ifaces = reciveContent.GetType().GetInterfaces();
-                if (ifaces.Contains(typeof(ISerialFormatter)) && ifaces.Contains(typeof(ISerialObject)))
-                {
-                    if (transaction.MyHeader.Content == null)
-                        transaction.MyHeader.Content = ((ISerialObject)reciveContent).Locate();
-
-                    object myContent = transaction.MyHeader.Content;
-
-                    ((ISerialObject)myContent).Merge(reciveContent);
-
-                    int objectCount = transaction.HeaderReceived.Context.ObjectsCount;
-                    if (objectCount == 0)
-                        transferContext.ReceiveMessage = false;
-                    else
-                        transaction.MessageReceived = new DealMessage(transaction, DirectionType.Receive, myContent);
-                }
-                else if(reciveContent is Hashtable)
-                {
-                    Hashtable hashTable = (Hashtable)reciveContent;
-                    if (hashTable.Contains("Register"))
-                    {
-                        transferContext.Denied = !(bool)hashTable["Register"];
-                        if (transferContext.Denied)
-                        {
-                            transferContext.Close = true;
-                            transferContext.ReceiveMessage = false;
-                            transferContext.SendMessage = false;
-                        }
-                    }
-                }
-                else
-                    transferContext.SendMessage = false;
-            }
-        }
-        private void CltRecMsg(ISerialBuffer buffer)
-        {
-            object serialCardsObj = ((object[])transaction.MessageReceived.Content)[buffer.DeserialBlockId];
-            ISerialFormatter serialCards = (ISerialFormatter)serialCardsObj;
-
-            object deserialCardsObj = serialCards.Deserialize(buffer);
-            ISerialFormatter deserialCards = (ISerialFormatter)deserialCardsObj;
-            if (deserialCards.DeserialCount <= deserialCards.ProgressCount || deserialCards.ProgressCount == 0)
-            {
-                transaction.Context.ObjectsLeft--;
                 deserialCards.ProgressCount = 0;
             }
         }
 
-        private void CltSendHead()
+        /// <summary>
+        /// The SrvRecOptions.
+        /// </summary>
+        private void SrvRecOptions()
         {
-            transaction.Manager.HeaderContent(transferContext.Transfer.MyHeader.Content, 
-                                              transferContext.Transfer.MyHeader.Content, 
-                                              DirectionType.Send);
-
-            if (transaction.MyHeader.Context.ObjectsCount == 0)
-                transferContext.SendMessage = false;
-
-            transferContext.Transfer.MyHeader.Serialize(transferContext, 0, 0);
-        }
-        private void CltSendMsg()
-        {
-            object serialcards = ((object[])transaction.MyMessage.Content)[transferContext.ObjectPosition];
-
-            int serialBlockId = ((ISerialFormatter)serialcards).Serialize(transferContext, transferContext.SerialBlockId, 5000);
-            if (serialBlockId < 0)
-            {
-                if (transferContext.ObjectPosition < (transaction.MyHeader.Context.ObjectsCount - 1))
-                {
-                    transferContext.ObjectPosition++;
-                    transferContext.SerialBlockId = 0;
-                    return;
-                }
-            }
-            transferContext.SerialBlockId = serialBlockId;
-        }
-
-        private void SrvRecGet(ISerialBuffer buffer)
-        {
+            transaction.HeaderReceived = transaction.MyHeader;
             transferContext.SendMessage = false;
             transferContext.ReceiveMessage = false;
-            transaction.HeaderReceived = transaction.MyHeader;        
-            transferContext.HandleGetRequest();
-        }
-        private void SrvSendGet()
-        {
-            transferContext.SendMessage = false;
-            transferContext.ReceiveMessage = false;           
+            transferContext.HandleOptionsRequest("application/json");
         }
 
+        /// <summary>
+        /// The SrvRecPost.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
         private void SrvRecPost(ISerialBuffer buffer)
         {
             if (SrvRecPostDealer(buffer))
@@ -493,6 +537,12 @@ namespace System.Deal
             transferContext.SendMessage = false;
             transferContext.ReceiveMessage = false;
         }
+
+        /// <summary>
+        /// The SrvRecPostDealer.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
         private bool SrvRecPostDealer(ISerialBuffer buffer)
         {
             bool isError = false;
@@ -528,7 +578,7 @@ namespace System.Deal
                 object dptmsgb = dptmsgx;
 
                 isError = SrvRecPostDealHeader(buffer);
-                if(objectCount > 0 && !isError)
+                if (objectCount > 0 && !isError)
                     isError = SrvRecPostDealMessage(dptmsgb);
 
             }
@@ -550,8 +600,14 @@ namespace System.Deal
             }
             return isError;
         }
+
+        /// <summary>
+        /// The SrvRecPostDealHeader.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="ISerialBuffer"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
         private bool SrvRecPostDealHeader(ISerialBuffer buffer)
-        { 
+        {
             bool isError = false;
             string errorMessage = "";
             try
@@ -562,7 +618,7 @@ namespace System.Deal
                 {
                     transaction.HeaderReceived = (headerObject != null) ? headerObject : null;
                     transaction.MyHeader.Context.Complexity = headerObject.Context.Complexity;
-                    transaction.MyHeader.Context.Identity =  headerObject.Context.Identity;
+                    transaction.MyHeader.Context.Identity = headerObject.Context.Identity;
 
                     if (headerObject.Context.ContentType != null)
                     {
@@ -593,9 +649,9 @@ namespace System.Deal
                                     //    transaction.MyHeader.Content = ((ISerialObject)myheader).Merge(_content);
                                     //else
                                     //{
-                                      //  ((ISettings)myheader).State.Expeled = true;
-                                        transaction.MyHeader.Content = myheader;
-                                   // }
+                                    //  ((ISettings)myheader).State.Expeled = true;
+                                    transaction.MyHeader.Content = myheader;
+                                    // }
                                 }
                                 else
                                 {
@@ -647,13 +703,19 @@ namespace System.Deal
             }
             return isError;
         }
+
+        /// <summary>
+        /// The SrvRecPostDealMessage.
+        /// </summary>
+        /// <param name="buffer">The buffer<see cref="object"/>.</param>
+        /// <returns>The <see cref="bool"/>.</returns>
         private bool SrvRecPostDealMessage(object buffer)
         {
             bool isError = false;
             string errorMessage = "";
             try
             {
-               // ((ISerialFormatter[])transaction.MessageReceived.Content).DeserializeJsonCards(buffer);                
+                // ((ISerialFormatter[])transaction.MessageReceived.Content).DeserializeJsonCards(buffer);                
             }
             catch (Exception ex)
             {
@@ -674,6 +736,61 @@ namespace System.Deal
             return isError;
         }
 
+        /// <summary>
+        /// The SrvSendGet.
+        /// </summary>
+        private void SrvSendGet()
+        {
+            transferContext.SendMessage = false;
+            transferContext.ReceiveMessage = false;
+        }
+
+        /// <summary>
+        /// The SrvSendHead.
+        /// </summary>
+        private void SrvSendHead()
+        {
+            transaction.Manager.HeaderContent(transferContext.Transfer.MyHeader.Content,
+                                              transferContext.Transfer.MyHeader.Content,
+                                              DirectionType.Send);
+
+            if (transaction.MyHeader.Context.ObjectsCount == 0)
+                transferContext.SendMessage = false;
+
+            transferContext.Transfer.MyHeader.Serialize(transferContext, 0, 0);
+        }
+
+        /// <summary>
+        /// The SrvSendMsg.
+        /// </summary>
+        private void SrvSendMsg()
+        {
+            int serialBlockId = ((ISerialFormatter[])transaction.MyMessage.Content)[transferContext.ObjectPosition].Serialize(transferContext, transferContext.SerialBlockId, 5000);
+
+            if (serialBlockId < 0)
+            {
+                if (transferContext.ObjectPosition < (transaction.MyHeader.Context.ObjectsCount - 1))
+                {
+                    transferContext.ObjectPosition++;
+                    transferContext.SerialBlockId = 0;
+                    return;
+                }
+            }
+            transferContext.SerialBlockId = serialBlockId;
+        }
+
+        /// <summary>
+        /// The SrvSendOptions.
+        /// </summary>
+        private void SrvSendOptions()
+        {
+            transferContext.SendMessage = false;
+            transferContext.ReceiveMessage = false;
+        }
+
+        /// <summary>
+        /// The SrvSendPost.
+        /// </summary>
         private void SrvSendPost()
         {
             transferContext.SendMessage = false;
@@ -687,46 +804,47 @@ namespace System.Deal
             else
                 transferContext.HandleDeniedRequest();
         }
+
+        /// <summary>
+        /// The SrvSendPostDealer.
+        /// </summary>
         private void SrvSendPostDealer()
         {
             SrvSendPostDealHeader();
-            SrvSendPostDealMessage();            
+            SrvSendPostDealMessage();
         }
+
+        /// <summary>
+        /// The SrvSendPostDealHeader.
+        /// </summary>
         private void SrvSendPostDealHeader()
         {
             transaction.Manager.HeaderContent(transferContext.Transfer.MyHeader.Content, transferContext.Transfer.MyHeader.Content, DirectionType.Send);
             transaction.MyHeader.SetJson(transferContext.RequestBuilder);
         }
+
+        /// <summary>
+        /// The SrvSendPostDealMessage.
+        /// </summary>
         private void SrvSendPostDealMessage()
         {
             StringBuilder msgcnt = new StringBuilder();
 
             Type[] ifaces = transaction.MyMessage.Content.GetType().GetInterfaces();
-           // if (ifaces.Contains(typeof(ICollection)) && transaction.MyHeader.Context.Errors == 0)
-              //  ((ISerialFormatter[])transaction.MyMessage.Content).SerializeJsonCards(msgcnt, 0, 0, transaction.MyHeader.Context.Complexity);
-          //  else
-                msgcnt.Append("null");
+            // if (ifaces.Contains(typeof(ICollection)) && transaction.MyHeader.Context.Errors == 0)
+            //  ((ISerialFormatter[])transaction.MyMessage.Content).SerializeJsonCards(msgcnt, 0, 0, transaction.MyHeader.Context.Complexity);
+            //  else
+            msgcnt.Append("null");
 
             transaction.MyMessage.Content = new object();
             transaction.MyMessage.SetJson(transferContext.RequestBuilder);
             string msg = msgcnt.ToString().Replace("}\r\n{", ",").Trim(new char[] { '\n', '\r' });
-            transferContext.RequestBuilder.Replace("\"Content\":{}", "\"Content\":" + msgcnt.ToString());          
+            transferContext.RequestBuilder.Replace("\"Content\":{}", "\"Content\":" + msgcnt.ToString());
             transferContext.RequestBuilder.Replace("}\r\n{", ",");
             transferContext.SendMessage = false;
             transferContext.ReceiveMessage = false;
         }
 
-        private void SrvRecOptions()
-        {
-            transaction.HeaderReceived = transaction.MyHeader;
-            transferContext.SendMessage = false;
-            transferContext.ReceiveMessage = false;
-            transferContext.HandleOptionsRequest("application/json");
-        }
-        private void SrvSendOptions()
-        {
-            transferContext.SendMessage = false;
-            transferContext.ReceiveMessage = false;
-        }
+        #endregion
     }
 }

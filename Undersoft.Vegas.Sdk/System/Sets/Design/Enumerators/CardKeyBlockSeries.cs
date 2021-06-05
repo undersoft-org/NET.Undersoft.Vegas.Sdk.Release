@@ -1,6 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Sets.Basedeck;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Sets.CardKeyBlockSeries.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 /**********************************************
     Copyright (c) 2020 Undersoft
@@ -14,27 +22,81 @@ using System.Sets.Basedeck;
  
 *********************************************/
 namespace System.Sets
-{      
+{
+    using System.Collections;
+    using System.Collections.Generic;
 
+    /// <summary>
+    /// Defines the <see cref="CardUniqueKeySeries{V}" />.
+    /// </summary>
+    /// <typeparam name="V">.</typeparam>
     public class CardUniqueKeySeries<V> : IEnumerator<ulong>, IEnumerator
     {
+        #region Fields
+
+        public ICard<V> Entry;
         private IDeck<V> map;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CardUniqueKeySeries{V}"/> class.
+        /// </summary>
+        /// <param name="Map">The Map<see cref="IDeck{V}"/>.</param>
         public CardUniqueKeySeries(IDeck<V> Map)
         {
             map = Map;
             Entry = map.First;
         }
 
-        public ICard<V> Entry;
+        #endregion
 
-        public ulong Key { get { return Entry.Key; } }
-        public V Value { get { return Entry.Value; } }
+        #region Properties
 
+        /// <summary>
+        /// Gets the Current.
+        /// </summary>
         public object Current => Entry.Key;
-       
-        ulong IEnumerator<ulong>.Current  => Entry.Key; 
 
+        /// <summary>
+        /// Gets the Key.
+        /// </summary>
+        public ulong Key
+        {
+            get { return Entry.Key; }
+        }
+
+        /// <summary>
+        /// Gets the Value.
+        /// </summary>
+        public V Value
+        {
+            get { return Entry.Value; }
+        }
+
+        /// <summary>
+        /// Gets the Current.
+        /// </summary>
+        ulong IEnumerator<ulong>.Current => Entry.Key;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            Entry = map.First;
+        }
+
+        /// <summary>
+        /// The MoveNext.
+        /// </summary>
+        /// <returns>The <see cref="bool"/>.</returns>
         public bool MoveNext()
         {
             Entry = Entry.Next;
@@ -47,15 +109,14 @@ namespace System.Sets
             return false;
         }
 
+        /// <summary>
+        /// The Reset.
+        /// </summary>
         public void Reset()
         {
             Entry = map.First;
         }
 
-        public void Dispose()
-        {
-            Entry = map.First;
-        }
-       
+        #endregion
     }
 }

@@ -14,6 +14,7 @@ namespace System.Labors
     using System.Instant;
     using System.Sets;
 
+
     public class Subject
     {
         public Scope Scope { get; set; }

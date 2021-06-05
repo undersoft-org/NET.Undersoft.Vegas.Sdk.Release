@@ -21,15 +21,6 @@ namespace System.Labors
         #region Methods
 
         /// <summary>
-        /// The EmptyCard.
-        /// </summary>
-        /// <returns>The <see cref="ICard{IDeputy}"/>.</returns>
-        public override ICard<IDeputy> EmptyCard()
-        {
-            return new LaborMethod();
-        }
-
-        /// <summary>
         /// The EmptyBaseDeck.
         /// </summary>
         /// <param name="size">The size<see cref="int"/>.</param>
@@ -37,6 +28,15 @@ namespace System.Labors
         public override ICard<IDeputy>[] EmptyBaseDeck(int size)
         {
             return new LaborMethod[size];
+        }
+
+        /// <summary>
+        /// The EmptyCard.
+        /// </summary>
+        /// <returns>The <see cref="ICard{IDeputy}"/>.</returns>
+        public override ICard<IDeputy> EmptyCard()
+        {
+            return new LaborMethod();
         }
 
         /// <summary>
@@ -62,10 +62,10 @@ namespace System.Labors
         /// <summary>
         /// The NewCard.
         /// </summary>
-        /// <param name="key">The key<see cref="long"/>.</param>
+        /// <param name="key">The key<see cref="object"/>.</param>
         /// <param name="value">The value<see cref="IDeputy"/>.</param>
         /// <returns>The <see cref="ICard{IDeputy}"/>.</returns>
-        public override ICard<IDeputy> NewCard(ulong key, IDeputy value)
+        public override ICard<IDeputy> NewCard(object key, IDeputy value)
         {
             return new LaborMethod(key, value);
         }
@@ -73,10 +73,10 @@ namespace System.Labors
         /// <summary>
         /// The NewCard.
         /// </summary>
-        /// <param name="key">The key<see cref="object"/>.</param>
+        /// <param name="key">The key<see cref="long"/>.</param>
         /// <param name="value">The value<see cref="IDeputy"/>.</param>
         /// <returns>The <see cref="ICard{IDeputy}"/>.</returns>
-        public override ICard<IDeputy> NewCard(object key, IDeputy value)
+        public override ICard<IDeputy> NewCard(ulong key, IDeputy value)
         {
             return new LaborMethod(key, value);
         }

@@ -1,10 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Instant.Mathset.ReckonableOperand.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Instant.Mathset
-{   
+{
+    using System;
+
+    #region Enums
+
     [Serializable]
     public enum ComputeableOperand
     {
@@ -14,4 +25,6 @@ namespace System.Instant.Mathset
         Multiply,
         Divide
     }
+
+    #endregion
 }

@@ -157,7 +157,7 @@ namespace System
 
         /// <summary>
         /// Gets or sets the IV
-        /// Initialization vector for CBC mode...
+        /// Initialization vector for CBC mode....
         /// </summary>
         public byte[] IV
         {

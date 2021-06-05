@@ -20,6 +20,12 @@ namespace System.Instant
 
     #region Delegates
 
+    /// <summary>
+    /// The InstantDelegate.
+    /// </summary>
+    /// <param name="target">The target<see cref="object"/>.</param>
+    /// <param name="parameters">The parameters<see cref="object[]"/>.</param>
+    /// <returns>The <see cref="object"/>.</returns>
     public delegate object InstantDelegate(object target, params object[] parameters);
 
     #endregion
@@ -35,6 +41,8 @@ namespace System.Instant
     };
 
     #endregion
+
+
 
     public class Deputy : IDeputy
     {
@@ -363,6 +371,10 @@ namespace System.Instant
         }
     }
 
+    /// <summary>
+    /// Defines the <see cref="ItemChangedEventArgs{T}" />.
+    /// </summary>
+    /// <typeparam name="T">.</typeparam>
     public class ItemChangedEventArgs<T> : EventArgs
     {
         #region Fields
@@ -375,6 +387,12 @@ namespace System.Instant
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemChangedEventArgs{T}"/> class.
+        /// </summary>
+        /// <param name="changesType">The changesType<see cref="ChangesType"/>.</param>
+        /// <param name="changedItem">The changedItem<see cref="T"/>.</param>
+        /// <param name="replacement">The replacement<see cref="T"/>.</param>
         public ItemChangedEventArgs(ChangesType changesType, T changedItem,
             T replacement)
         {

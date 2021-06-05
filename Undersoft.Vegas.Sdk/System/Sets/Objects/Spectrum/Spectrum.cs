@@ -20,6 +20,7 @@
    @date: (30.05.2021) 
    @licence MIT
  *************************************************/
+
 namespace System.Sets
 {
     using System.Collections;
@@ -45,9 +46,17 @@ namespace System.Sets
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Spectrum{V}"/> class.
+        /// </summary>
         public Spectrum() : this(int.MaxValue, false)
         {
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Spectrum{V}"/> class.
+        /// </summary>
+        /// <param name="size">The size<see cref="int"/>.</param>
+        /// <param name="safeThread">The safeThread<see cref="bool"/>.</param>
         public Spectrum(int size, bool safeThread)
         {
             Initialize(size);

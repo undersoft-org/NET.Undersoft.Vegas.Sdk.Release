@@ -1,12 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Extract;
+﻿/*************************************************
+   Copyright (c) 2021 Undersoft
+
+   System.Extract.Stock.StockFile.cs
+   
+   @project: Undersoft.Vegas.Sdk
+   @stage: Development
+   @author: Dariusz Hanc
+   @date: (05.06.2021) 
+   @licence MIT
+ *************************************************/
 
 namespace System.Extract.Stock
 {
+    using System;
+    using System.Extract;
+    using System.Security.Permissions;
+
     /// <summary>
     /// Read/Write buffer with support for simple inter-process read/write synchronisation.
     /// </summary>
@@ -27,7 +36,7 @@ namespace System.Extract.Stock
             {
                 Write(value, index, type);
             }
-        }      
+        }
         public object this[int index, int offset, Type t]
         {
             get
@@ -47,20 +56,19 @@ namespace System.Extract.Stock
             Read(structure, index, type);
         }
 
-        public StockFile(string file, string name, int bufferSize, Type _type) : 
+        public StockFile(string file, string name, int bufferSize, Type _type) :
                          base(file, name, bufferSize, true, true)
         {
             type = _type;
             Open();
         }
-        public StockFile(string file, string name, Type _type) : 
+        public StockFile(string file, string name, Type _type) :
                          base(file, name, 0, false, true)
         {
             type = _type;
             Open();
-        }       
+        }
 
-        #region Writing
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1061:DoNotHideBaseClassMethods")]
         new public void Write(object data, long position = 0, Type t = null, int timeout = 1000)
@@ -110,9 +118,7 @@ namespace System.Extract.Stock
 
         }
 
-        #endregion
 
-        #region Reading
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1061:DoNotHideBaseClassMethods")]
         new public void Read(object data, long position = 0, Type t = null, int timeout = 1000)
@@ -123,7 +129,7 @@ namespace System.Extract.Stock
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1061:DoNotHideBaseClassMethods")]
         new public void Read(object[] data, long position = 0, Type t = null, int timeout = 1000)
         {
-            base.Read( data, position, t, timeout);
+            base.Read(data, position, t, timeout);
 
         }
 
@@ -159,7 +165,6 @@ namespace System.Extract.Stock
 
         }
 
-        #endregion
 
         public void CopyTo(IStock destination, uint length, int startIndex = 0)
         {

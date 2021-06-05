@@ -18,8 +18,8 @@ namespace System.Instant
     using System.Instant.Treatments;
     using System.IO;
     using System.Sets;
-    using System.Runtime.InteropServices;
     using System.Uniques;
+
 
     public abstract class FigureSleeves : ISleeves
     {
@@ -515,7 +515,7 @@ namespace System.Instant
         {
             return Sleeves.NewCard(key, value);
         }
-        public ICard<IFigure> NewCard(ulong  key, IFigure value)
+        public ICard<IFigure> NewCard(ulong key, IFigure value)
         {
             return Sleeves.NewCard(key, value);
         }
