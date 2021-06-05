@@ -223,7 +223,7 @@ namespace System.Extract
         }
         [Fact] public unsafe void Extractor_StructModel_Test()
         {
-            Assemblies.ResolveExecuting();
+            Assemblies.ResolvingFunction();
 
             StructModel[] structure = new StructModel[] { new StructModel(83948930), new StructModel(45453), new StructModel(5435332) };
             structure[0].Alias = "FirstAlias";
