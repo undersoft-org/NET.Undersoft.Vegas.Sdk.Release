@@ -31,9 +31,6 @@ namespace System.Instant
 
     #endregion
 
-    /// <summary>
-    /// Defines the <see cref="FigureCompiler" />.
-    /// </summary>
     public abstract class FigureCompiler : FigureCompilerConstructors
     {
         #region Fields
@@ -54,12 +51,6 @@ namespace System.Instant
 
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FigureCompiler"/> class.
-        /// </summary>
-        /// <param name="instantFigure">The instantFigure<see cref="Figure"/>.</param>
-        /// <param name="fieldRubrics">The fieldRubrics<see cref="MemberRubrics"/>.</param>
-        /// <param name="propertyRubrics">The propertyRubrics<see cref="MemberRubrics"/>.</param>
         public FigureCompiler(Figure instantFigure, MemberRubrics fieldRubrics, MemberRubrics propertyRubrics)
         {
             this.fieldRubrics = fieldRubrics;
@@ -72,26 +63,14 @@ namespace System.Instant
 
         #region Properties
 
-        /// <summary>
-        /// Gets a value indicating whether IsDerived.
-        /// </summary>
         protected bool IsDerived => figure.IsDerived;
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// The CompileFigureType.
-        /// </summary>
-        /// <param name="typeName">The typeName<see cref="string"/>.</param>
-        /// <returns>The <see cref="Type"/>.</returns>
         public abstract Type CompileFigureType(string typeName);
 
-        /// <summary>
-        /// The CreateCompareToMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateCompareToMethod(TypeBuilder tb)
         {
             MethodInfo mi = typeof(IComparable<IUnique>).GetMethod("CompareTo");
@@ -112,10 +91,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateEqualsMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateEqualsMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IEquatable<IUnique>).GetMethod("Equals");
@@ -136,18 +111,8 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateFieldsAndProperties.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
-        /// <returns>The <see cref="FieldBuilder[]"/>.</returns>
         public abstract FieldBuilder[] CreateFieldsAndProperties(TypeBuilder tb);
 
-        /// <summary>
-        /// The CreateFigureAsAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="FigureAsAttribute"/>.</param>
         public void CreateFigureAsAttribute(FieldBuilder field, FigureAsAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(marshalAsCtor, new object[] { attrib.Value },
@@ -155,21 +120,11 @@ namespace System.Instant
                                                                                new object[] { attrib.SizeConst }));
         }
 
-        /// <summary>
-        /// The CreateFigureDisplayAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="FigureDisplayAttribute"/>.</param>
         public void CreateFigureDisplayAttribute(FieldBuilder field, FigureDisplayAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(figureDisplayCtor, new object[] { attrib.Name }));
         }
 
-        /// <summary>
-        /// The CreateFigureIdentityAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="FigureIdentityAttribute"/>.</param>
         public void CreateFigureIdentityAttribute(FieldBuilder field, FigureIdentityAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(figureIdentityCtor, Type.EmptyTypes,
@@ -178,11 +133,6 @@ namespace System.Instant
                                                                                     new object[] { attrib.Order, attrib.IsAutoincrement }));
         }
 
-        /// <summary>
-        /// The CreateFigureKeyAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="FigureKeyAttribute"/>.</param>
         public void CreateFigureKeyAttribute(FieldBuilder field, FigureKeyAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(figureKeyCtor, Type.EmptyTypes,
@@ -191,20 +141,11 @@ namespace System.Instant
                                                                                new object[] { attrib.Order, attrib.IsAutoincrement }));
         }
 
-        /// <summary>
-        /// The CreateFigureRequiredAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
         public void CreateFigureRequiredAttribute(FieldBuilder field)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(figureRequiredCtor, Type.EmptyTypes));
         }
 
-        /// <summary>
-        /// The CreateFigureTreatmentAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="FigureTreatmentAttribute"/>.</param>
         public void CreateFigureTreatmentAttribute(FieldBuilder field, FigureTreatmentAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(figuresTreatmentCtor, Type.EmptyTypes,
@@ -213,16 +154,8 @@ namespace System.Instant
                                                                                         new object[] { attrib.AggregateOperand, attrib.SummaryOperand }));
         }
 
-        /// <summary>
-        /// The CreateGetBytesMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public abstract void CreateGetBytesMethod(TypeBuilder tb);
 
-        /// <summary>
-        /// The CreateGetEmptyProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateGetEmptyProperty(TypeBuilder tb)
         {
             PropertyBuilder prop = tb.DefineProperty("Empty", PropertyAttributes.HasDefault,
@@ -248,10 +181,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret); // return
         }
 
-        /// <summary>
-        /// The CreateGetGenericByIntMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateGetGenericByIntMethod(TypeBuilder tb)
         {
             string[] typeParameterNames = { "V" };
@@ -278,10 +207,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateGetUniqueBytesMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateGetUniqueBytesMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IUnique).GetMethod("GetUniqueBytes");
@@ -300,10 +225,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateGetUniqueKeyMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateGetUniqueKeyMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IUnique).GetMethod("GetUniqueKey");
@@ -323,10 +244,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateGetUniqueSeedMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateGetUniqueSeedMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IUnique).GetMethod("GetUniqueSeed");
@@ -346,23 +263,10 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateItemByIntProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public abstract void CreateItemByIntProperty(TypeBuilder tb);
 
-        /// <summary>
-        /// The CreateItemByStringProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public abstract void CreateItemByStringProperty(TypeBuilder tb);
 
-        /// <summary>
-        /// The CreateMarshaAslAttribute.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="attrib">The attrib<see cref="MarshalAsAttribute"/>.</param>
         public void CreateMarshaAslAttribute(FieldBuilder field, MarshalAsAttribute attrib)
         {
             field.SetCustomAttribute(new CustomAttributeBuilder(marshalAsCtor, new object[] { attrib.Value },
@@ -370,18 +274,8 @@ namespace System.Instant
                                                                                new object[] { attrib.SizeConst }));
         }
 
-        /// <summary>
-        /// The CreateSerialCodeProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
-        /// <param name="type">The type<see cref="Type"/>.</param>
-        /// <param name="name">The name<see cref="string"/>.</param>
         public abstract void CreateSerialCodeProperty(TypeBuilder tb, Type type, string name);
 
-        /// <summary>
-        /// The CreateSetUniqueKeyMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateSetUniqueKeyMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IUnique).GetMethod("SetUniqueKey");
@@ -402,10 +296,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateSetUniqueSeedMethod.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateSetUniqueSeedMethod(TypeBuilder tb)
         {
             MethodInfo createArray = typeof(IUnique).GetMethod("SetUniqueSeed");
@@ -426,10 +316,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret);
         }
 
-        /// <summary>
-        /// The CreateUniqueKeyProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateUniqueKeyProperty(TypeBuilder tb)
         {
             PropertyBuilder prop = tb.DefineProperty("UniqueKey", PropertyAttributes.HasDefault,
@@ -473,10 +359,6 @@ namespace System.Instant
             il.Emit(OpCodes.Ret); // return
         }
 
-        /// <summary>
-        /// The CreateUniqueSeedProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public virtual void CreateUniqueSeedProperty(TypeBuilder tb)
         {
 
@@ -521,25 +403,10 @@ namespace System.Instant
             il.Emit(OpCodes.Ret); // return
         }
 
-        /// <summary>
-        /// The CreateValueArrayProperty.
-        /// </summary>
-        /// <param name="tb">The tb<see cref="TypeBuilder"/>.</param>
         public abstract void CreateValueArrayProperty(TypeBuilder tb);
 
-        /// <summary>
-        /// The GetTypeBuilder.
-        /// </summary>
-        /// <param name="typeName">The typeName<see cref="string"/>.</param>
-        /// <returns>The <see cref="TypeBuilder"/>.</returns>
         public abstract TypeBuilder GetTypeBuilder(string typeName);
 
-        /// <summary>
-        /// The ResolveFigureAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mrwa">The mrwa<see cref="MemberRubric"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         public void ResolveFigureAttributes(FieldBuilder fb, MemberRubric mrwa, MemberRubric mr)
         {
             MemberInfo mi = mrwa.RubricInfo;
@@ -555,12 +422,6 @@ namespace System.Instant
             resolveFigureTreatmentAttributes(fb, mi, mr);
         }
 
-        /// <summary>
-        /// The ResolveMarshalAsAttributeForArray.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="member">The member<see cref="MemberRubric"/>.</param>
-        /// <param name="type">The type<see cref="Type"/>.</param>
         public void ResolveMarshalAsAttributeForArray(FieldBuilder field, MemberRubric member, Type type)
         {
             MemberInfo _member = member.RubricInfo;
@@ -593,12 +454,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The ResolveMarshalAsAttributeForString.
-        /// </summary>
-        /// <param name="field">The field<see cref="FieldBuilder"/>.</param>
-        /// <param name="member">The member<see cref="MemberRubric"/>.</param>
-        /// <param name="type">The type<see cref="Type"/>.</param>
         public void ResolveMarshalAsAttributeForString(FieldBuilder field, MemberRubric member, Type type)
         {
             MemberInfo _member = member.RubricInfo;
@@ -631,12 +486,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The resolveFigureDisplayAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mi">The mi<see cref="MemberInfo"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         private void resolveFigureDisplayAttributes(FieldBuilder fb, MemberInfo mi, MemberRubric mr)
         {
             object[] o = mi.GetCustomAttributes(typeof(FigureDisplayAttribute), false);
@@ -654,12 +503,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The resolveFigureIdentityAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mi">The mi<see cref="MemberInfo"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         private void resolveFigureIdentityAttributes(FieldBuilder fb, MemberInfo mi, MemberRubric mr)
         {
             if (!mr.IsKey)
@@ -693,12 +536,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The resolveFigureKeyAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mi">The mi<see cref="MemberInfo"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         private void resolveFigureKeyAttributes(FieldBuilder fb, MemberInfo mi, MemberRubric mr)
         {
             object[] o = mi.GetCustomAttributes(typeof(FigureKeyAttribute), false);
@@ -734,12 +571,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The resolveFigureRquiredAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mi">The mi<see cref="MemberInfo"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         private void resolveFigureRquiredAttributes(FieldBuilder fb, MemberInfo mi, MemberRubric mr)
         {
             object[] o = mi.GetCustomAttributes(typeof(FigureRequiredAttribute), false);
@@ -757,12 +588,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The resolveFigureTreatmentAttributes.
-        /// </summary>
-        /// <param name="fb">The fb<see cref="FieldBuilder"/>.</param>
-        /// <param name="mi">The mi<see cref="MemberInfo"/>.</param>
-        /// <param name="mr">The mr<see cref="MemberRubric"/>.</param>
         private void resolveFigureTreatmentAttributes(FieldBuilder fb, MemberInfo mi, MemberRubric mr)
         {
             object[] o = mi.GetCustomAttributes(typeof(FigureTreatmentAttribute), false);

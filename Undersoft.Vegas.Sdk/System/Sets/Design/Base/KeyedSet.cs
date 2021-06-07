@@ -21,17 +21,14 @@ namespace System.Sets.Basedeck
     public abstract class KeyedSet<V> : Uniqueness, ICollection<V>, IList<V>, IDeck<V>, ICollection<ICard<V>>, IList<ICard<V>>,
                                                      ICollection<IUnique<V>>, IProducerConsumerCollection<V>, IDisposable
     {
-
         static protected readonly float RESIZING_VECTOR = 1.766F;
         static protected readonly float CONFLICTS_PERCENT_LIMIT = 0.222F;
         static protected readonly float REMOVED_PERCENT_LIMIT = 0.15F;
-        //static protected readonly ulong MAX_BIT_MASK = 0xFFFFFFFFFFFFFFFF;       
 
         protected ICard<V> first, last;
         protected ICard<V>[] table;
-        protected int count, conflicts, removed, minSize, size;//, msbId;
-        protected uint maxId;
-        //protected ulong mixMask;      
+        protected int count, conflicts, removed, minSize, size;
+        protected uint maxId;     
 
         protected int nextSize()
         {
@@ -74,8 +71,6 @@ namespace System.Sets.Basedeck
             --removed;
         }
 
-
-
         public KeyedSet(int capacity = 17, HashBits bits = HashBits.bit64) : base(bits)
         {
             size = capacity;
@@ -104,19 +99,6 @@ namespace System.Sets.Basedeck
                 this.Add(c);
         }
 
-        //public KeyedDeck(int capacity = 17, HashBits bits = HashBits.bit64) : base(bits)
-        //{
-        //    size = capacity;
-        //    minSize = capacity;
-        //    table = EmptyCardTable(capacity);
-        //    first = EmptyCard();
-        //    last = first;
-        //    mixMask = Submix.Mask((ulong)capacity);
-        //    msbId = Submix.MsbId(capacity);
-        //}
-
-
-
         public virtual ICard<V> First
         { get { return first; } }
         public virtual ICard<V> Last
@@ -127,9 +109,6 @@ namespace System.Sets.Basedeck
         public virtual bool IsReadOnly { get; set; }
         public virtual bool IsSynchronized { get; set; }
         public virtual object SyncRoot { get; set; }
-
-
-
 
         ICard<V> IList<ICard<V>>.this[int index]
         {
@@ -156,8 +135,6 @@ namespace System.Sets.Basedeck
             get { return InnerGet(unique.Key(key)); }
             set { InnerPut(unique.Key(key), value); }
         }
-
-
 
         protected virtual V InnerGet(ulong key)
         {
@@ -270,8 +247,6 @@ namespace System.Sets.Basedeck
         }
         public abstract ICard<V> GetCard(int index);
 
-
-
         protected abstract ICard<V> InnerPut(ulong key, V value);
         protected abstract ICard<V> InnerPut(V value);
         protected abstract ICard<V> InnerPut(ICard<V> value);
@@ -354,7 +329,6 @@ namespace System.Sets.Basedeck
                 Put(item);
             }
         }
-
 
         protected abstract bool InnerAdd(ulong key, V value);
         protected abstract bool InnerAdd(V value);
@@ -500,10 +474,50 @@ namespace System.Sets.Basedeck
         }
         public virtual void Insert(int index, V item)
         {
-            Insert(index, NewCard(item));
+            // get position index in table, which is an absolute value from key %(modulo) size. Simply it is rest from dividing key and size                           
+            ulong key = unique.Key(item);
+            ulong pos = getPosition(key);
+
+            ICard<V> card = table[pos]; /// local for last removed item finded   
+            // add in case when item doesn't exist and there is no conflict                                                      
+            if (card == null)
+            {
+                card = NewCard(item);
+                table[pos] = card;
+                InnerInsert(index, card);
+                countIncrement();
+                return;
+            }
+
+            for (; ; )
+            {
+                /// key check
+                if (card.Equals(key))
+                {
+                    /// when card was removed insert 
+                    if (card.Removed)
+                    {
+                        var newcard = NewCard(item);
+                        card.Extent = newcard;
+                        InnerInsert(index, newcard);
+                        conflictIncrement();
+                        return;
+                    }
+                    throw new Exception("Item exist");
+
+                }
+                /// check that all conflicts was examinated and local card is the last one  
+                if (card.Extent == null)
+                {
+                    var newcard = NewCard(item);
+                    card.Extent = newcard;
+                    InnerInsert(index, newcard);
+                    conflictIncrement();
+                    return;
+                }
+                card = card.Extent;
+            }
         }
-
-
 
         public virtual bool Enqueue(V value)
         {
@@ -575,7 +589,6 @@ namespace System.Sets.Basedeck
             return TryDequeue(out output);
         }
 
-
         protected virtual void renewClear(int capacity)
         {
             if (capacity != size || count > 0)
@@ -590,22 +603,6 @@ namespace System.Sets.Basedeck
                 last = first;
             }
         }
-
-        //private void renewClear(int capacity)
-        //{
-        //    if (capacity != size || count > 0)
-        //    {
-        //        size = capacity;
-        //        conflicts = 0;
-        //        removed = 0;
-        //        count = 0;
-        //        table = EmptyCardTable(size);
-        //        first = EmptyCard();
-        //        last = first;
-        //        mixMask = Submix.Mask((ulong)minSize);
-        //        msbId = Submix.MsbId(minSize);
-        //    }
-        //}
 
         public virtual void Renew(IEnumerable<V> cards)
         {
@@ -631,7 +628,6 @@ namespace System.Sets.Basedeck
             renewClear(minSize);
             Put(cards);
         }
-
 
         protected bool InnerContainsKey(ulong key)
         {
@@ -674,8 +670,6 @@ namespace System.Sets.Basedeck
         {
             return InnerContainsKey(unique.Key(item));
         }
-
-
 
         protected virtual V InnerRemove(ulong key)
         {
@@ -735,19 +729,6 @@ namespace System.Sets.Basedeck
             last = first;
         }
 
-        //public virtual void Clear()
-        //{
-        //    size = minSize;
-        //    conflicts = 0;
-        //    removed = 0;
-        //    count = 0;
-        //    table = EmptyCardTable(size);
-        //    first = EmptyCard();
-        //    last = first;
-        //    mixMask = Submix.Mask((ulong)minSize);
-        //    msbId = Submix.MsbId(minSize);
-        //}
-
         public virtual void Flush()
         {
             conflicts = 0;
@@ -758,21 +739,6 @@ namespace System.Sets.Basedeck
             first = EmptyCard();
             last = first;
         }
-
-        //public virtual void Flush()
-        //{
-        //    conflicts = 0;
-        //    removed = 0;
-        //    count = 0;
-        //    table = null;
-        //    table = EmptyCardTable(size);
-        //    first = EmptyCard();
-        //    last = first;
-        //    mixMask = Submix.Mask((ulong)size);
-        //    msbId = Submix.MsbId(size);
-        //}
-
-
 
         public virtual void CopyTo(ICard<V>[] array, int index)
         {
@@ -871,9 +837,6 @@ namespace System.Sets.Basedeck
             return GetCard(item).Index;
         }
 
-
-
-
         public virtual IEnumerable<V> AsValues()
         {
             return (IEnumerable<V>)this;
@@ -914,8 +877,6 @@ namespace System.Sets.Basedeck
         {
             return new CardSeries<V>(this);
         }
-
-
 
         protected ulong getPosition(ulong key)
         {
@@ -1052,101 +1013,6 @@ namespace System.Sets.Basedeck
             conflicts = _conflicts;
         }
 
-        //private void rehashAndReindex(ICard<V> card, ICard<V>[] newcardTable, int newSize)
-        //{
-        //    int _conflicts = 0;
-        //    int newsize = newSize;
-        //    ulong newMixMask = Submix.Mask((ulong)newsize);
-        //    int newMsbId = Submix.MsbId(newsize);
-        //    ICard<V> _firstcard = EmptyCard();
-        //    ICard<V> _lastcard = _firstcard;
-        //    do
-        //    {
-        //        if (!card.Removed)
-        //        {
-        //            ulong pos = getPosition(card.Key, newsize, newMixMask, newMsbId);
-
-        //            ICard<V> mem = newcardTable[pos];
-
-        //            if (mem == null)
-        //            {
-        //                card.Extent = null;
-        //                newcardTable[pos] = _lastcard = _lastcard.Next = card;
-        //            }
-        //            else
-        //            {
-        //                for (; ; )
-        //                {
-        //                    if (mem.Extent == null)
-        //                    {
-        //                        card.Extent = null; ;
-        //                        _lastcard = _lastcard.Next = mem.Extent = card;
-        //                        _conflicts++;
-        //                        break;
-        //                    }
-        //                    else
-        //                        mem = mem.Extent;
-        //                }
-        //            }
-        //        }
-
-        //        card = card.Next;
-
-        //    } while (card != null);
-
-        //    conflicts = _conflicts;
-        //    removed = 0;
-        //    first = _firstcard;
-        //    last = _lastcard;
-        //    mixMask = newMixMask;
-        //    msbId = newMsbId;
-        //}
-
-        //private void rehash(ICard<V> card, ICard<V>[] newcardTable, int newSize)
-        //{
-        //    int _conflicts = 0;
-        //    int newsize = newSize;
-        //    ulong newMixMask = Submix.Mask((ulong)newsize);
-        //    int newMsbId = Submix.MsbId(newsize);
-        //    do
-        //    {
-        //        if (!card.Removed)
-        //        {
-        //            ulong pos = getPosition(card.Key, newsize, newMixMask, newMsbId);
-
-        //            ICard<V> mem = newcardTable[pos];
-
-        //            if (mem == null)
-        //            {
-        //                card.Extent = null;
-        //                newcardTable[pos] = card;
-        //            }
-        //            else
-        //            {
-        //                for (; ; )
-        //                {
-        //                    if (mem.Extent == null)
-        //                    {
-        //                        card.Extent = null;
-        //                        mem.Extent = card;
-        //                        _conflicts++;
-        //                        break;
-        //                    }
-        //                    else
-        //                        mem = mem.Extent;
-        //                }
-        //            }
-        //        }
-
-        //        card = card.Next;
-
-        //    } while (card != null);
-        //    conflicts = _conflicts;
-        //    mixMask = newMixMask;
-        //    msbId = newMsbId;
-
-        //}
-
         protected bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -1163,11 +1029,6 @@ namespace System.Sets.Basedeck
                 disposedValue = true;
             }
         }
-
-        //~KeyedDeck() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //  Dispose(false);
-        //}
 
         public void Dispose()
         {

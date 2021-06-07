@@ -134,9 +134,12 @@ namespace System.Instant
 
                         ResolveFigureAttributes(fb, _mr, mr);
 
-                        PropertyBuilder pb = (type != typeof(string)) ?
-                                              createProperty(tb, fb, type, name) :
-                                              createStringProperty(tb, fb, type, name);
+                        //PropertyBuilder pb = (type != typeof(string)) ?
+                        //                      createProperty(tb, fb, type, name) :
+                        //                      createStringProperty(tb, fb, type, name);
+
+                        PropertyBuilder pb = createProperty(tb, fb, type, name);
+
                         fields[i] = fb;
                         props[i] = pb;
                         pb.SetCustomAttribute(new CustomAttributeBuilder(dataMemberCtor, new object[0],
@@ -568,7 +571,7 @@ namespace System.Instant
             //tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Any, Type.EmptyTypes);
 
             tb.SetCustomAttribute(new CustomAttributeBuilder(structLayoutCtor, new object[] { LayoutKind.Sequential },
-                                                             structLayoutFields, new object[] { CharSet.Ansi, 1 }));
+                                                            structLayoutFields, new object[] { CharSet.Ansi, 1 }));
 
             tb.SetCustomAttribute(new CustomAttributeBuilder(typeof(DataContractAttribute)
                                                                 .GetConstructor(Type.EmptyTypes), new object[0]));
@@ -590,16 +593,23 @@ namespace System.Instant
         {
             if (type == typeof(string) || type.IsArray)
             {
-                Type _type = type;
+                //Type _type = type;
 
-                FieldBuilder fb;
+                //FieldBuilder fb;
+
+                //if (type == typeof(string))
+                //    _type = typeof(char[]);
+
+                //fb = tb.DefineField(fieldName, _type, FieldAttributes.Private | FieldAttributes.HasDefault | FieldAttributes.HasFieldMarshal);
+
+                //ResolveMarshalAsAttributeForArray(fb, mr, _type);
+
+                FieldBuilder fb = tb.DefineField(fieldName, type, FieldAttributes.Private | FieldAttributes.HasDefault | FieldAttributes.HasFieldMarshal);
 
                 if (type == typeof(string))
-                    _type = typeof(char[]);
-
-                fb = tb.DefineField(fieldName, _type, FieldAttributes.Private | FieldAttributes.HasDefault | FieldAttributes.HasFieldMarshal);
-
-                ResolveMarshalAsAttributeForArray(fb, mr, _type);
+                    ResolveMarshalAsAttributeForString(fb, mr, type);
+                else
+                    ResolveMarshalAsAttributeForArray(fb, mr, type);
 
                 return fb;
             }

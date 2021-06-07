@@ -612,8 +612,8 @@ namespace System.Extract
             else
                 size = Marshal.SizeOf(structure);
 
-            IntPtr p = Marshal.AllocHGlobal(Marshal.SizeOf(structure));
-            Marshal.StructureToPtr(structure, p, false);
+            IntPtr p = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(structure, p, true);
 
             return p;
         }
@@ -653,10 +653,10 @@ namespace System.Extract
             else
                 size = Marshal.SizeOf(structure);
 
-            IntPtr p = Marshal.AllocHGlobal(Marshal.SizeOf(structure));
-            Marshal.StructureToPtr(structure, p, false);
+            IntPtr p = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(structure, p, true);
 
-            return (byte*)p;
+            return (byte*)(p.ToPointer());
         }
 
         /// <summary>
@@ -706,7 +706,7 @@ namespace System.Extract
                 Type t = structure.GetType();
                 if (t.IsLayoutSequential)
                 {
-                    return Extraction.PointerToValueStructure((byte*)binary, structure, 0);
+                    return Extraction.PointerToValueStructure((byte*)(binary.ToPointer()), structure, 0);
                 }
                 else
                     return PointerToStructure(binary, structure.GetType(), 0);
@@ -739,7 +739,7 @@ namespace System.Extract
         /// <returns>The <see cref="ValueType"/>.</returns>
         public unsafe static ValueType PointerToStructure(IntPtr binary, ValueType structure)
         {
-            return Extraction.PointerToValueStructure((byte*)binary, structure, 0);
+            return Extraction.PointerToValueStructure((byte*)(binary.ToPointer()), structure, 0);
         }
 
         /// <summary>
@@ -803,26 +803,26 @@ namespace System.Extract
 
                 if (t.IsLayoutSequential)
                 {
-                    extractor.ValueStructureToPointer(structure, (byte*)binary, 0);
+                    extractor.ValueStructureToPointer(structure, (byte*)(binary.ToPointer()), 0);
                     return;
                 }
 
                 if (structure is DateTime)
                 {
                     structure = ((DateTime)structure).ToBinary();
-                    Marshal.StructureToPtr(structure, binary, false);
+                    Marshal.StructureToPtr(structure, binary, true);
                     return;
                 }
 
                 if (structure is Enum)
                 {
                     structure = Convert.ToUInt32(structure);
-                    Marshal.StructureToPtr(structure, binary, false);
+                    Marshal.StructureToPtr(structure, binary, true);
                     return;
                 }
             }
 
-            Marshal.StructureToPtr(structure, binary, false);
+            Marshal.StructureToPtr(structure, binary, true);
         }
 
         /// <summary>
@@ -848,7 +848,7 @@ namespace System.Extract
                 structure = ((DateTime)structure).ToBinary();
             if (structure.GetType().IsLayoutSequential)
             {
-                extractor.ValueStructureToPointer(structure, (byte*)binary, 0);
+                extractor.ValueStructureToPointer(structure, (byte*)(binary.ToPointer()), 0);
                 return;
             }
 

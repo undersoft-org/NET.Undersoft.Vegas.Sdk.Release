@@ -18,9 +18,6 @@ namespace System.Instant
     using System.Reflection;
     using System.Runtime.InteropServices;
 
-    /// <summary>
-    /// Defines the <see cref="Figure" />.
-    /// </summary>
     public class Figure : IInstant
     {
         #region Fields
@@ -33,21 +30,10 @@ namespace System.Instant
 
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Figure"/> class.
-        /// </summary>
-        /// <param name="figureMembers">The figureMembers<see cref="IList{MemberInfo}"/>.</param>
-        /// <param name="modeType">The modeType<see cref="FigureMode"/>.</param>
         public Figure(IList<MemberInfo> figureMembers, FigureMode modeType = FigureMode.Reference)
             : this(figureMembers.ToArray(), null, modeType)
         {
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Figure"/> class.
-        /// </summary>
-        /// <param name="figureMembers">The figureMembers<see cref="IList{MemberInfo}"/>.</param>
-        /// <param name="figureTypeName">The figureTypeName<see cref="string"/>.</param>
-        /// <param name="modeType">The modeType<see cref="FigureMode"/>.</param>
         public Figure(IList<MemberInfo> figureMembers, string figureTypeName, FigureMode modeType = FigureMode.Reference)
         {
             Name = (figureTypeName != null && figureTypeName != "") ? figureTypeName : DateTime.Now.ToBinary().ToString();
@@ -56,30 +42,13 @@ namespace System.Instant
             Rubrics = fieldRubrics = new MemberRubrics(createMemberRurics(figureMembers));
             Rubrics.KeyRubrics = new MemberRubrics();
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Figure"/> class.
-        /// </summary>
-        /// <param name="figureRubrics">The figureRubrics<see cref="MemberRubrics"/>.</param>
-        /// <param name="figureTypeName">The figureTypeName<see cref="string"/>.</param>
-        /// <param name="modeType">The modeType<see cref="FigureMode"/>.</param>
         public Figure(MemberRubrics figureRubrics, string figureTypeName, FigureMode modeType = FigureMode.Reference)
             : this(figureRubrics.ToArray(), figureTypeName, modeType)
         {
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Figure"/> class.
-        /// </summary>
-        /// <param name="figureModelType">The figureModelType<see cref="Type"/>.</param>
-        /// <param name="modeType">The modeType<see cref="FigureMode"/>.</param>
         public Figure(Type figureModelType, FigureMode modeType = FigureMode.Reference) : this(figureModelType, null, modeType)
         {
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Figure"/> class.
-        /// </summary>
-        /// <param name="figureModelType">The figureModelType<see cref="Type"/>.</param>
-        /// <param name="figureTypeName">The figureTypeName<see cref="string"/>.</param>
-        /// <param name="modeType">The modeType<see cref="FigureMode"/>.</param>
         public Figure(Type figureModelType, string figureTypeName, FigureMode modeType = FigureMode.Reference)
         {
             BaseType = figureModelType;
@@ -101,49 +70,24 @@ namespace System.Instant
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the BaseType.
-        /// </summary>
         public Type BaseType { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether IsDerived.
-        /// </summary>
         public bool IsDerived { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Rubrics.
-        /// </summary>
         public IRubrics Rubrics { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Size.
-        /// </summary>
         public int Size { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Type.
-        /// </summary>
         public Type Type { get; set; }
 
-        /// <summary>
-        /// Gets or sets the mode.
-        /// </summary>
         private FigureMode mode { get; set; }
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// The Combine.
-        /// </summary>
-        /// <returns>The <see cref="IFigure"/>.</returns>
         public IFigure Combine()
         {
             if (this.Type == null)
@@ -175,10 +119,6 @@ namespace System.Instant
             return newFigure();
         }
 
-        /// <summary>
-        /// The New.
-        /// </summary>
-        /// <returns>The <see cref="object"/>.</returns>
         public object New()
         {
             if (this.Type == null)
@@ -186,10 +126,6 @@ namespace System.Instant
             return this.Type.New();
         }
 
-        /// <summary>
-        /// The combineDerivedType.
-        /// </summary>
-        /// <param name="compiler">The compiler<see cref="FigureCompiler"/>.</param>
         private void combineDerivedType(FigureCompiler compiler)
         {
             var fcdt = compiler;
@@ -210,6 +146,11 @@ namespace System.Instant
 
             var df = fcdt.derivedFields;
             Rubrics.AsValues().Select((m, y) => m.FigureField = df[y].RubricInfo).ToArray();
+            Rubrics.AsValues().Where(m => m.FigureField != null)
+                                       .Select((f, y) => new object[] {
+                                           f.FieldId = y - 1,
+                                           f.RubricId = y - 1 })                                       
+                                         .ToArray();
 
             foreach (var rubric in Rubrics.Skip(1).ToArray())
             {
@@ -224,10 +165,6 @@ namespace System.Instant
             }
         }
 
-        /// <summary>
-        /// The combineDynamicType.
-        /// </summary>
-        /// <param name="compiler">The compiler<see cref="FigureCompiler"/>.</param>
         private void combineDynamicType(FigureCompiler compiler)
         {
             var fcvt = compiler;
@@ -253,11 +190,6 @@ namespace System.Instant
                                            .ToArray();
         }
 
-        /// <summary>
-        /// The createMemberRurics.
-        /// </summary>
-        /// <param name="membersInfo">The membersInfo<see cref="IList{MemberInfo}"/>.</param>
-        /// <returns>The <see cref="MemberRubric[]"/>.</returns>
         private MemberRubric[] createMemberRurics(IList<MemberInfo> membersInfo)
         {
             return membersInfo.Select(m => !(m is MemberRubric) ? m.MemberType == MemberTypes.Field ? new MemberRubric((FieldInfo)m) :
@@ -265,10 +197,6 @@ namespace System.Instant
                                                                   null : (MemberRubric)m).Where(p => p != null).ToArray();
         }
 
-        /// <summary>
-        /// The newFigure.
-        /// </summary>
-        /// <returns>The <see cref="IFigure"/>.</returns>
         private IFigure newFigure()
         {
             if (this.Type == null)

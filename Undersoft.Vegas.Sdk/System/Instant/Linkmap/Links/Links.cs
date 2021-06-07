@@ -28,8 +28,6 @@ namespace System.Instant.Linking
 
     #endregion
 
-
-
     public class Links : BaseCatalog<Link>, IUnique
     {
         private Ussn serialcode;
