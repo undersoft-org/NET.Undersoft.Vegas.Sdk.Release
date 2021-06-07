@@ -170,46 +170,46 @@ namespace System.Extract
         /// <summary>
         /// The Extractor_FigureExtracts_Test.
         /// </summary>
-        [Fact]
-        public unsafe void Extractor_FigureExtracts_Test()
-        {
-            Figure refFigure = new Figure(typeof(FieldsAndPropertiesModel));
-            FieldsAndPropertiesModel fapm = new FieldsAndPropertiesModel();
-            IFigure refFigureFilled = Figure_Compilation_Helper_Test(refFigure, fapm);
+        //[Fact]
+        //public unsafe void Extractor_FigureExtracts_Test()
+        //{
+        //    //Figure refFigure = new Figure(typeof(FieldsAndPropertiesModel));
+        //    //FieldsAndPropertiesModel fapm = new FieldsAndPropertiesModel();
+        //    //object refFigureFilled = Figure_Compilation_Helper_Test(refFigure, fapm);
+          
+        //    //byte[] refFigureFilled_UnmngPtr = refFigureFilled.GetSequentialBytes();
+        //    //object refFigureNew_A = refFigure.New();
+        //    //Extractor.BytesToStructure(refFigureFilled_UnmngPtr, refFigureNew_A, 0);
 
-            IntPtr refFigureFilled_UnmngPtr = refFigureFilled.GetStructureIntPtr();
-            IFigure refFigureNew_A = refFigure.Combine();
-            refFigureFilled_UnmngPtr.ToStructure(refFigureNew_A);
+        //    //byte[] refFigureNew_A_Bytes = refFigureFilled.GetBytes();
+        //    //IFigure refFigureNew_B = refFigure.Combine();
+        //    //refFigureNew_A_Bytes.ToStructure(refFigureNew_B);
 
-            byte[] refFigureNew_A_Bytes = refFigureNew_A.GetBytes();
-            IFigure refFigureNew_B = refFigure.Combine();
-            refFigureNew_A_Bytes.ToStructure(refFigureNew_B);
+        //    //IFigure refFigureNew_C = refFigure.Combine();
+        //    //refFigureNew_C.StructureFrom(refFigureNew_A_Bytes);
 
-            IFigure refFigureNew_C = refFigure.Combine();
-            refFigureNew_C.StructureFrom(refFigureNew_A_Bytes);
+        //    //Figure valtypeFigure = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.ValueType);
+        //    //fapm = new FieldsAndPropertiesModel();
+        //    //IFigure valtypeFigureFilled = Figure_Compilation_Helper_Test(valtypeFigure, fapm);
+        //    //ValueType valtypeFigureFilledAndCasted = (ValueType)valtypeFigureFilled;
 
-            Figure valtypeFigure = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.ValueType);
-            fapm = new FieldsAndPropertiesModel();
-            IFigure valtypeFigureFilled = Figure_Compilation_Helper_Test(valtypeFigure, fapm);
-            ValueType valtypeFigureFilledAndCasted = (ValueType)valtypeFigureFilled;
+        //    //IntPtr valtypeFigureFilledAndCasted_UnmngPtr = valtypeFigureFilledAndCasted.GetStructureIntPtr();
 
-            IntPtr valtypeFigureFilledAndCasted_UnmngPtr = valtypeFigureFilledAndCasted.GetStructureIntPtr();
+        //    //IFigure valtypeFigureNew_A = valtypeFigure.Combine();
+        //    //ValueType valtypeFigureNew_A_Casted = (ValueType)valtypeFigureNew_A;
+        //    //valtypeFigureNew_A = (IFigure)(valtypeFigureFilledAndCasted_UnmngPtr.ToStructure(valtypeFigureNew_A_Casted));
 
-            IFigure valtypeFigureNew_A = valtypeFigure.Combine();
-            ValueType valtypeFigureNew_A_Casted = (ValueType)valtypeFigureNew_A;
-            valtypeFigureNew_A = (IFigure)(valtypeFigureFilledAndCasted_UnmngPtr.ToStructure(valtypeFigureNew_A_Casted));
+        //    //byte[] valtypeFigureNew_A_Bytes = valtypeFigureNew_A.GetBytes();
+        //    //IFigure valtypeFigureNew_B = valtypeFigure.Combine();
+        //    //valtypeFigureNew_B = (IFigure)(valtypeFigureFilledAndCasted_UnmngPtr.ToStructure(valtypeFigureNew_B));
+        //    //fixed (byte* b = valtypeFigureNew_A_Bytes)
+        //    //    valtypeFigureNew_B = (IFigure)(Extractor.PointerToStructure(b, valtypeFigureNew_B));
 
-            byte[] valtypeFigureNew_A_Bytes = valtypeFigureNew_A.GetBytes();
-            IFigure valtypeFigureNew_B = valtypeFigure.Combine();
-            valtypeFigureNew_B = (IFigure)(valtypeFigureFilledAndCasted_UnmngPtr.ToStructure(valtypeFigureNew_B));
-            fixed (byte* b = valtypeFigureNew_A_Bytes)
-                valtypeFigureNew_B = (IFigure)(Extractor.PointerToStructure(b, valtypeFigureNew_B));
+        //    //IFigure valtypeFigureNew_C = valtypeFigure.Combine();
+        //    //valtypeFigureNew_C = (IFigure)(valtypeFigureNew_C.StructureFrom(valtypeFigureFilledAndCasted_UnmngPtr));
 
-            IFigure valtypeFigureNew_C = valtypeFigure.Combine();
-            valtypeFigureNew_C = (IFigure)(valtypeFigureNew_C.StructureFrom(valtypeFigureFilledAndCasted_UnmngPtr));
-
-            Marshal.FreeHGlobal((IntPtr)valtypeFigureFilledAndCasted_UnmngPtr);
-        }
+        //    //Marshal.FreeHGlobal((IntPtr)valtypeFigureFilledAndCasted_UnmngPtr);
+        //}
 
         /// <summary>
         /// The Extractor_PointerToNewStruct_Type_Test.
@@ -265,7 +265,7 @@ namespace System.Extract
             StructModel structure2 = new StructModel();
             ValueType o = structure2;
 
-            Extraction.PointerToValueStructure(pserial, o, 0);
+            o = Extraction.PointerToValueStructure(pserial, o, 0);
 
             structure2 = (StructModel)o;
 

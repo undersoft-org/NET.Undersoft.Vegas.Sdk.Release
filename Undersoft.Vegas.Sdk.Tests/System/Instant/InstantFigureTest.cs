@@ -19,16 +19,10 @@ namespace System.Instant.Tests
 
     using Xunit;
 
-    /// <summary>
-    /// Defines the <see cref="FigureTest" />.
-    /// </summary>
     public class FigureTest
     {
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FigureTest"/> class.
-        /// </summary>
         public FigureTest()
         {
         }
@@ -37,101 +31,88 @@ namespace System.Instant.Tests
 
         #region Methods
 
-        /// <summary>
-        /// The Figure_Extractions_Test.
-        /// </summary>
-        [Fact]
-        public unsafe void Figure_Extractions_Test()
-        {
+        //[Fact]
+        //public unsafe void Figure_Extractions_Test()
+        //{
 
-            Figure referenceType = new Figure(typeof(FieldsAndPropertiesModel));
-            FieldsAndPropertiesModel fom = new FieldsAndPropertiesModel();
-            object rts = Figure_Compilation_Helper_Test(referenceType, fom);
+        //    Figure referenceType = new Figure(typeof(FieldsAndPropertiesModel));
+        //    FieldsAndPropertiesModel fom = new FieldsAndPropertiesModel();
+        //    object rts = Figure_Compilation_Helper_Test(referenceType, fom);
 
-            IntPtr pserial = rts.GetStructureIntPtr();
-            object rts2 = referenceType.New();
-            pserial.ToStructure(rts2);
+        //    IntPtr pserial = rts.GetStructureIntPtr();
+        //    object rts2 = referenceType.New();
+        //    pserial.ToStructure(rts2);
 
-            byte[] bserial = rts2.GetBytes();
-            object rts3 = referenceType.New();
-            bserial.ToStructure(rts3);
+        //    byte[] bserial = rts2.GetBytes();
+        //    object rts3 = referenceType.New();
+        //    bserial.ToStructure(rts3);
 
-            object rts4 = referenceType.New();
-            rts4.StructureFrom(bserial);
+        //    object rts4 = referenceType.New();
+        //    rts4.StructureFrom(bserial);
 
-            Figure valueType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.ValueType);
-            fom = new FieldsAndPropertiesModel();
-            object vts = Figure_Compilation_Helper_Test(valueType, fom);
-            ValueType v = (ValueType)vts;
+        //    Figure valueType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.ValueType);
+        //    fom = new FieldsAndPropertiesModel();
+        //    IFigure vts = Figure_Compilation_Helper_Test(valueType, fom);
+        //    ValueType v = (ValueType)vts;
 
-            IntPtr pserial2 = vts.GetStructureIntPtr();
+        //    IntPtr pserial2 = v.GetStructureIntPtr();
 
-            object vts2 = valueType.New();
-            ValueType v2 = (ValueType)vts2;
-            vts2 = pserial2.ToStructure(vts2);
+        //    IFigure vts2 = valueType.Combine();
+        //    ValueType v2 = (ValueType)vts2;
+        //    vts2 = (IFigure)(pserial2.ToStructure(v2));
 
-            byte[] bserial2 = vts.GetBytes();
-            object vts3 = valueType.New();
-            vts3 = bserial2.ToStructure(vts3);
-            fixed (byte* b = bserial2)
-                vts3 = Extractor.PointerToStructure(b, vts3);
+        //    byte[] bserial2 = vts.GetBytes();
+        //    IFigure vts3 = valueType.Combine();
+        //    ValueType v3 = (ValueType)vts3;
+        //    vts3 = (IFigure)(bserial2.ToStructure(v3));
+        //    fixed (byte* b = bserial2)
+        //        vts3 = (IFigure)(Extractor.PointerToStructure(b, vts3));
 
-            object vts4 = valueType.New();
-            vts4 = vts4.StructureFrom(pserial2);
+        //    IFigure vts4 = valueType.Combine();
+        //    vts4 = (IFigure)(vts4.StructureFrom(pserial2));
 
-            Marshal.FreeHGlobal((IntPtr)pserial2);
-        }
+        //    Marshal.FreeHGlobal((IntPtr)pserial2);
+        //}
 
-        /// <summary>
-        /// The Figure_Memberinfo_FieldsAndPropertiesModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_Memberinfo_FieldsAndPropertiesModel_Compilation_Test()
         {
-            Figure referenceType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.Derived);
-            FieldsAndPropertiesModel fom = new FieldsAndPropertiesModel();
-            Figure_Compilation_Helper_Test(referenceType, fom);
+            Figure derivedType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.Derived);
+            IFigure figureA = Figure_Compilation_Helper_Test(derivedType, new FieldsAndPropertiesModel());
+
+            Figure referenceType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.Reference);
+            IFigure figureB = Figure_Compilation_Helper_Test(referenceType, new FieldsAndPropertiesModel());
 
             Figure valueType = new Figure(typeof(FieldsAndPropertiesModel), FigureMode.ValueType);
-            fom = new FieldsAndPropertiesModel();
-            Figure_Compilation_Helper_Test(valueType, fom);
+            IFigure figureC = Figure_Compilation_Helper_Test(valueType, new FieldsAndPropertiesModel());
         }
 
-        /// <summary>
-        /// The Figure_Memberinfo_FieldsOnlyModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_Memberinfo_FieldsOnlyModel_Compilation_Test()
         {
-            Figure referenceType = new Figure(typeof(FieldsOnlyModel));
+            Figure derivedType = new Figure(typeof(FieldsOnlyModel), FigureMode.Derived);
+            IFigure figureA = Figure_Compilation_Helper_Test(derivedType, new FieldsOnlyModel());
 
-            FieldsOnlyModel fom = new FieldsOnlyModel();
-            Figure_Compilation_Helper_Test(referenceType, fom);
+            Figure referenceType = new Figure(typeof(FieldsOnlyModel), FigureMode.Reference);
+            IFigure figureB = Figure_Compilation_Helper_Test(referenceType, new FieldsOnlyModel());
 
             Figure valueType = new Figure(typeof(FieldsOnlyModel), FigureMode.ValueType);
-            fom = new FieldsOnlyModel();
-            Figure_Compilation_Helper_Test(valueType, fom);
+            IFigure figureC = Figure_Compilation_Helper_Test(valueType, new FieldsOnlyModel());        
         }
 
-        /// <summary>
-        /// The Figure_Memberinfo_PropertiesOnlyModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_Memberinfo_PropertiesOnlyModel_Compilation_Test()
         {
-            Figure str = new Figure(typeof(PropertiesOnlyModel));
-            PropertiesOnlyModel fom = new PropertiesOnlyModel();
-            Figure_Compilation_Helper_Test(str, fom);
+            Figure derivedType = new Figure(typeof(PropertiesOnlyModel), FigureMode.Derived);
+            IFigure figureA = Figure_Compilation_Helper_Test(derivedType, new PropertiesOnlyModel());
+
+            Figure referenceType = new Figure(typeof(PropertiesOnlyModel), FigureMode.Reference);
+            IFigure figureB = Figure_Compilation_Helper_Test(referenceType, new PropertiesOnlyModel());
 
             Figure valueType = new Figure(typeof(PropertiesOnlyModel), FigureMode.ValueType);
-
-            fom = new PropertiesOnlyModel();
-            Figure_Compilation_Helper_Test(valueType, fom);
+            IFigure figureC = Figure_Compilation_Helper_Test(valueType, new PropertiesOnlyModel());
         }
 
-        /// <summary>
-        /// The Figure_MemberRubric_FieldsAndPropertiesModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_MemberRubric_FieldsAndPropertiesModel_Compilation_Test()
         {
@@ -146,43 +127,34 @@ namespace System.Instant.Tests
             Figure_Compilation_Helper_Test(valueType, new FieldsAndPropertiesModel());
         }
 
-        /// <summary>
-        /// The Figure_MemberRubric_FieldsOnlyModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_MemberRubric_FieldsOnlyModel_Compilation_Test()
         {
             Figure referenceType = new Figure(FigureMocks.Figure_MemberRubric_FieldsOnlyModel(),
                                                                 "Figure_MemberRubric_FieldsOnlyModel_Reference");
             FieldsOnlyModel fom = new FieldsOnlyModel();
-            Figure_Compilation_Helper_Test(referenceType, fom);
+            IFigure figureA = Figure_Compilation_Helper_Test(referenceType, fom);
 
             Figure valueType = new Figure(FigureMocks.Figure_Memberinfo_FieldsOnlyModel(),
                                                              "Figure_MemberRubric_FieldsOnlyModel_ValueType", FigureMode.ValueType);
             fom = new FieldsOnlyModel();
-            Figure_Compilation_Helper_Test(valueType, fom);
+            IFigure figureB = Figure_Compilation_Helper_Test(valueType, fom);
         }
 
-        /// <summary>
-        /// The Figure_MemberRubric_PropertiesOnlyModel_Compilation_Test.
-        /// </summary>
         [Fact]
         public void Figure_MemberRubric_PropertiesOnlyModel_Compilation_Test()
         {
             Figure referenceType = new Figure(FigureMocks.Figure_MemberRubric_PropertiesOnlyModel(),
                                                                 "Figure_MemberRubric_PropertiesOnlyModel_Reference");
             PropertiesOnlyModel fom = new PropertiesOnlyModel();
-            Figure_Compilation_Helper_Test(referenceType, fom);
+            IFigure figureA = Figure_Compilation_Helper_Test(referenceType, fom);
 
             Figure valueType = new Figure(FigureMocks.Figure_MemberRubric_PropertiesOnlyModel(),
                                                         "Figure_MemberRubric_PropertiesOnlyModel_ValueType", FigureMode.ValueType);
             fom = new PropertiesOnlyModel();
-            Figure_Compilation_Helper_Test(valueType, fom);
+            IFigure figureB = Figure_Compilation_Helper_Test(valueType, fom);
         }
 
-        /// <summary>
-        /// The Figure_ValueArray_GetSet_Test.
-        /// </summary>
         [Fact]
         public void Figure_ValueArray_GetSet_Test()
         {
@@ -195,41 +167,35 @@ namespace System.Instant.Tests
             Figure_Compilation_Helper_Test(valueType, Figure_Compilation_Helper_Test(valueType, new FieldsAndPropertiesModel()));
         }
 
-        /// <summary>
-        /// The Figure_Compilation_Helper_Test.
-        /// </summary>
-        /// <param name="str">The str<see cref="Figure"/>.</param>
-        /// <param name="fom">The fom<see cref="FieldsAndPropertiesModel"/>.</param>
-        /// <returns>The <see cref="IFigure"/>.</returns>
         private IFigure Figure_Compilation_Helper_Test(Figure str, FieldsAndPropertiesModel fom)
         {
             IFigure rts = str.Combine();
             fom.Id = 202;
             rts[0] = 202;
-            Assert.Equal(fom.Id, (rts)[0]);
-            (rts)["Id"] = 404;
-            Assert.NotEqual(fom.Id, (rts)[nameof(fom.Id)]);
-            (rts)[nameof(fom.Name)] = fom.Name;
-            Assert.Equal(fom.Name, (rts)[nameof(fom.Name)]);
-            (rts).SerialCode = new Ussn(DateTime.Now.ToBinary());
-            string hexTetra = (rts).SerialCode.ToString();
+            Assert.Equal(fom.Id, rts[0]);
+            rts["Id"] = 404;
+            Assert.NotEqual(fom.Id, rts[nameof(fom.Id)]);
+            rts[nameof(fom.Name)] = fom.Name;
+            Assert.Equal(fom.Name, rts[nameof(fom.Name)]);
+            rts.SerialCode = new Ussn(DateTime.Now.ToBinary());
+            string hexTetra = rts.SerialCode.ToString();
             Ussn ssn = new Ussn(hexTetra);
-            Assert.Equal(ssn, (rts).SerialCode);
+            Assert.Equal(ssn, rts.SerialCode);
 
             for (int i = 1; i < str.Rubrics.Count; i++)
             {
-                var r = str.Rubrics[i].RubricInfo;
-                if (r.MemberType == MemberTypes.Field)
+                var ri = str.Rubrics[i].RubricInfo;
+                if (ri.MemberType == MemberTypes.Field)
                 {
-                    var fi = fom.GetType().GetField(((FieldInfo)r).Name);
+                    var fi = fom.GetType().GetField(((FieldInfo)ri).Name);
                     if (fi != null)
-                        (rts)[r.Name] = fi.GetValue(fom);
+                        rts[ri.Name] = fi.GetValue(fom);
                 }
-                if (r.MemberType == MemberTypes.Property)
+                if (ri.MemberType == MemberTypes.Property)
                 {
-                    var pi = fom.GetType().GetProperty(((PropertyInfo)r).Name);
+                    var pi = fom.GetType().GetProperty(((PropertyInfo)ri).Name);
                     if (pi != null)
-                        (rts)[r.Name] = pi.GetValue(fom);
+                        (rts)[ri.Name] = pi.GetValue(fom);
                 }
             }
 
@@ -252,12 +218,6 @@ namespace System.Instant.Tests
             return rts;
         }
 
-        /// <summary>
-        /// The Figure_Compilation_Helper_Test.
-        /// </summary>
-        /// <param name="str">The str<see cref="Figure"/>.</param>
-        /// <param name="fom">The fom<see cref="FieldsOnlyModel"/>.</param>
-        /// <returns>The <see cref="IFigure"/>.</returns>
         private IFigure Figure_Compilation_Helper_Test(Figure str, FieldsOnlyModel fom)
         {
             IFigure rts = str.Combine();
@@ -310,11 +270,6 @@ namespace System.Instant.Tests
             return rts;
         }
 
-        /// <summary>
-        /// The Figure_Compilation_Helper_Test.
-        /// </summary>
-        /// <param name="str">The str<see cref="Figure"/>.</param>
-        /// <param name="figure">The figure<see cref="IFigure"/>.</param>
         private void Figure_Compilation_Helper_Test(Figure str, IFigure figure)
         {
             IFigure rts = str.Combine();
@@ -324,12 +279,6 @@ namespace System.Instant.Tests
                 Assert.Equal(figure[i], rts.ValueArray[i]);
         }
 
-        /// <summary>
-        /// The Figure_Compilation_Helper_Test.
-        /// </summary>
-        /// <param name="str">The str<see cref="Figure"/>.</param>
-        /// <param name="fom">The fom<see cref="PropertiesOnlyModel"/>.</param>
-        /// <returns>The <see cref="IFigure"/>.</returns>
         private IFigure Figure_Compilation_Helper_Test(Figure str, PropertiesOnlyModel fom)
         {
             IFigure rts = str.Combine();

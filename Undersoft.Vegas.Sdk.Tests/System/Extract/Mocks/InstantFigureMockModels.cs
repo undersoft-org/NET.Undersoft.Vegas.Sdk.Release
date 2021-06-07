@@ -162,23 +162,24 @@ namespace System.Extract
     [StructLayout(LayoutKind.Sequential)]
     public class FieldsAndPropertiesModel
     {
-        #region Fields
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
-        public string Alias = "ProperSize";
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
-        public string Name = "SizeIsTwoTimesLonger";
-        private long Key = long.MaxValue;
-
-        #endregion
-
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        public int Id { get; set; } = 404;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 15)]
+        public string Alias = "ProperSize";
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 25)]
+        public string Name = "SizeIsTwoTimesLonger";
 
         /// <summary>
         /// Gets or sets the ByteArray.
         /// </summary>
-        [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public byte[] ByteArray { get; set; }
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public byte[] ByteArray;
 
         /// <summary>
         /// Gets or sets the Factor.
@@ -188,12 +189,7 @@ namespace System.Extract
         /// <summary>
         /// Gets or sets the GlobalId.
         /// </summary>
-        public Guid GlobalId { get; set; } = new Guid();
-
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        public int Id { get; set; } = 404;
+        public Guid GlobalId { get; set; } = new Guid();    
 
         /// <summary>
         /// Gets or sets a value indicating whether Status.
@@ -211,6 +207,12 @@ namespace System.Extract
         public DateTime Time { get; set; } = DateTime.Now;
 
         #endregion
+
+        #region Fields
+     
+        public long Key = long.MaxValue;
+
+        #endregion     
     }
 
     /// <summary>
@@ -221,13 +223,13 @@ namespace System.Extract
     {
         #region Fields
 
+        public int Id = 404;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Alias = "ProperSize";
         [FigureAs(UnmanagedType.ByValArray, SizeConst = 10)]
         public byte[] ByteArray = new byte[10];
         public double Factor = 2 * (long)int.MaxValue;
-        public Guid GlobalId = new Guid();
-        public int Id = 404;
+        public Guid GlobalId = new Guid();       
         public long Key = long.MaxValue;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
         public string Name = "SizeIsTwoTimesLonger";
@@ -244,15 +246,12 @@ namespace System.Extract
     [StructLayout(LayoutKind.Sequential)]
     public class PropertiesOnlyModel
     {
-        #region Fields
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
-        public string Alias = "ProperSize";
-        private long Key = long.MaxValue;
-
-        #endregion
-
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        public int Id { get; set; } = 404;
 
         /// <summary>
         /// Gets or sets the ByteArray.
@@ -268,12 +267,7 @@ namespace System.Extract
         /// <summary>
         /// Gets or sets the GlobalId.
         /// </summary>
-        public Guid GlobalId { get; set; } = new Guid();
-
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        public int Id { get; set; } = 404;
+        public Guid GlobalId { get; set; } = new Guid();        
 
         /// <summary>
         /// Gets or sets the Name.
@@ -297,5 +291,13 @@ namespace System.Extract
         public DateTime Time { get; set; } = DateTime.Now;
 
         #endregion
+
+        #region Fields
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 10)]
+        public string Alias = "ProperSize";
+        private long Key = long.MaxValue;
+
+        #endregion      
     }
 }
